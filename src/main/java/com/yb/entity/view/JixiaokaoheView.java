@@ -1,0 +1,41 @@
+package com.yb.entity.view;
+
+import com.yb.entity.JixiaokaoheEntity;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
+import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
+
+import java.io.Serializable;
+import com.yb.utils.EncryptUtil;
+ 
+
+/**
+ * 绩效考核
+ * 后端返回视图实体辅助类   
+ * （通常后端关联的表或者自定义的字段需要返回使用）
+ * @author 
+ * @email 
+ * @date 2026-01-30 23:21:49
+ */
+@TableName("jixiaokaohe")
+public class JixiaokaoheView  extends JixiaokaoheEntity implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	public JixiaokaoheView(){
+	}
+ 
+ 	public JixiaokaoheView(JixiaokaoheEntity jixiaokaoheEntity){
+ 	try {
+			BeanUtils.copyProperties(jixiaokaoheEntity,this);
+		} catch (BeansException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+ 		
+	}
+
+
+}

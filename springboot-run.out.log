@@ -1,0 +1,79 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.yb:springboot32e20828n >---------------------
+[INFO] Building springboot3-schema 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot-maven-plugin:3.3.0:run (default-cli) > test-compile @ springboot32e20828n >>>
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ springboot32e20828n ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 43017 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ springboot32e20828n ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 163 source files to F:\springboot32e20828n\springboot32e20828n\target\classes
+[INFO] /F:/springboot32e20828n/springboot32e20828n/src/main/java/com/yb/utils/MapUtils.java: F:\springboot32e20828n\springboot32e20828n\src\main\java\com\yb\utils\MapUtils.java使用或覆盖了已过时的 API。
+[INFO] /F:/springboot32e20828n/springboot32e20828n/src/main/java/com/yb/utils/MapUtils.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] /F:/springboot32e20828n/springboot32e20828n/src/main/java/com/yb/controller/YuangongController.java: 某些输入文件使用或覆盖了标记为待删除的已过时 API。
+[INFO] /F:/springboot32e20828n/springboot32e20828n/src/main/java/com/yb/controller/YuangongController.java: 有关详细信息, 请使用 -Xlint:removal 重新编译。
+[INFO] /F:/springboot32e20828n/springboot32e20828n/src/main/java/com/yb/controller/YuangongController.java: 某些输入文件使用了未经检查或不安全的操作。
+[INFO] /F:/springboot32e20828n/springboot32e20828n/src/main/java/com/yb/controller/YuangongController.java: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:testResources (default-testResources) @ springboot32e20828n ---
+[INFO] skip non existing resourceDirectory F:\springboot32e20828n\springboot32e20828n\src\test\resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ springboot32e20828n ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to F:\springboot32e20828n\springboot32e20828n\target\test-classes
+[INFO] 
+[INFO] <<< spring-boot-maven-plugin:3.3.0:run (default-cli) < test-compile @ springboot32e20828n <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot-maven-plugin:3.3.0:run (default-cli) @ springboot32e20828n ---
+[INFO] Attaching agents: []
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+SLF4J(W): Class path contains multiple SLF4J providers.
+SLF4J(W): Found provider [ch.qos.logback.classic.spi.LogbackServiceProvider@445b84c0]
+SLF4J(W): Found provider [org.slf4j.simple.SimpleServiceProvider@61a52fbd]
+SLF4J(W): See https://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J(I): Actual provider is of type [ch.qos.logback.classic.spi.LogbackServiceProvider@445b84c0]
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.0)
+
+2026-04-24T01:06:16.419+08:00  INFO 7920 --- [           main] com.yb.SpringbootSchemaApplication       : Starting SpringbootSchemaApplication using Java 17.0.12 with PID 7920 (F:\springboot32e20828n\springboot32e20828n\target\classes started by a in F:\springboot32e20828n\springboot32e20828n)
+2026-04-24T01:06:16.422+08:00  INFO 7920 --- [           main] com.yb.SpringbootSchemaApplication       : No active profile set, falling back to 1 default profile: "default"
+2026-04-24T01:06:17.649+08:00  WARN 7920 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'jwtShiroConfig' of type [com.yb.config.JwtShiroConfig$$SpringCGLIB$$0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [lifecycleBeanPostProcessor] is declared through a non-static factory method on that class; consider declaring it as static instead.
+2026-04-24T01:06:17.864+08:00  WARN 7920 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'jwtShiroUtil' of type [com.yb.utils.JwtShiroUtil] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor []? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-24T01:06:17.866+08:00  WARN 7920 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'jwtShiroRealm' of type [com.yb.config.JwtShiroRealm] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor []? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-24T01:06:18.033+08:00  WARN 7920 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'securityManager' of type [org.apache.shiro.web.mgt.DefaultWebSecurityManager] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor []? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-24T01:06:18.047+08:00  WARN 7920 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'authorizationAttributeSourceAdvisor' of type [org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor []? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-04-24T01:06:18.430+08:00  INFO 7920 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-04-24T01:06:18.444+08:00  INFO 7920 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-24T01:06:18.445+08:00  INFO 7920 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.24]
+2026-04-24T01:06:18.655+08:00  INFO 7920 --- [           main] org.apache.jasper.servlet.TldScanner     : At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+2026-04-24T01:06:18.661+08:00  INFO 7920 --- [           main] o.a.c.c.C.[.[.[/springboot32e20828n]     : Initializing Spring embedded WebApplicationContext
+2026-04-24T01:06:18.661+08:00  INFO 7920 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2154 ms
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+ _ _   |_  _ _|_. ___ _ |    _ 
+| | |\/|_)(_| | |_\  |_)||_|_\ 
+     /               |         
+                        3.5.5 
+2026-04-24T01:06:19.754+08:00  INFO 7920 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-24T01:06:19.937+08:00  INFO 7920 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@44abdb1f
+2026-04-24T01:06:19.937+08:00  INFO 7920 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-24T01:06:21.311+08:00  INFO 7920 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/springboot32e20828n'
+2026-04-24T01:06:21.321+08:00  INFO 7920 --- [           main] com.yb.SpringbootSchemaApplication       : Started SpringbootSchemaApplication in 5.396 seconds (process running for 5.846)
+2026-04-24T01:06:40.269+08:00  INFO 7920 --- [nio-8080-exec-1] o.a.c.c.C.[.[.[/springboot32e20828n]     : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-24T01:06:40.269+08:00  INFO 7920 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-24T01:06:40.274+08:00  INFO 7920 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+/springboot32e20828n/zhiweishensu/page
+/springboot32e20828n/renshiguanliyuan/session
+/springboot32e20828n/zhiweishensu/shBatch
