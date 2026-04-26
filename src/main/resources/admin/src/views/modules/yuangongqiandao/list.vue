@@ -38,7 +38,7 @@
 							<span v-for="w in weekNames" :key="w" class="sign-week-cell">{{ w }}</span>
 						</div>
 						<div class="sign-days-grid">
-							<div v-for="(c, idx) in calendarCells" :key="'c'+idx" :class="['sign-day-cell', c.pad ? 'is-pad' : '', c.today ? 'is-today' : '']">
+							<div v-for="(c, idx) in calendarCells" :key="'c'+idx" :class="['sign-day-cell', c.pad ? 'is-pad' : '', c.today ? 'is-today' : '', !c.pad && selectedDate === c.dateStr ? 'is-selected' : '']" @click="onCalendarDayClick(c)">
 								<template v-if="!c.pad">
 									<span class="sign-day-num">{{ c.day }}</span>
 									<span v-if="c.markType === 'sign_ot'" class="sign-day-mark sign-day-mark-ot" title="当日已签到并有加班记录"></span>
@@ -190,6 +190,7 @@
 				calendarDataReady: false,
 				calendarLoading: false,
 				calendarHint: '',
+				selectedDate: null,
 				weekNames: ['日', '一', '二', '三', '四', '五', '六'],
 				todaySignState: {
 					hasSignIn: false,
@@ -345,6 +346,7 @@
 			},
 			search() {
 				this.pageIndex = 1;
+				this.selectedDate = null;
 				this.getDataList();
 				this.loadSignCalendar();
 			},
@@ -363,7 +365,14 @@
 				params.qiandaoshijian_start = `${ym}-01 00:00:00`;
 				params.qiandaoshijian_end = `${ym}-${pad(lastDay)} 23:59:59`;
 			},
+			onCalendarDayClick(c) {
+				if (c.pad) return;
+				this.selectedDate = this.selectedDate === c.dateStr ? null : c.dateStr;
+				this.pageIndex = 1;
+				this.getDataList();
+			},
 			onCalendarMonthChange() {
+				this.selectedDate = null;
 				this.loadSignCalendar();
 				this.getDataList();
 			},
@@ -522,7 +531,10 @@
 				if(this.searchForm.xingming!='' && this.searchForm.xingming!=undefined){
 					params['xingming'] = '%' + this.searchForm.xingming + '%'
 				}
-				if (this.listUsesMonthFilter) {
+				if (this.selectedDate) {
+					params.qiandaoshijian_start = `${this.selectedDate} 00:00:00`;
+					params.qiandaoshijian_end = `${this.selectedDate} 23:59:59`;
+				} else if (this.listUsesMonthFilter) {
 					this.applyCalendarMonthRangeToParams(params);
 				}
 				this.$http({
@@ -1341,8 +1353,19 @@
 		background: transparent;
 		padding: 0;
 	}
+	.sign-day-cell:not(.is-pad) {
+		cursor: pointer;
+		transition: background 0.15s;
+	}
+	.sign-day-cell:not(.is-pad):hover {
+		background: #eef4fd;
+	}
 	.sign-day-cell.is-today {
 		box-shadow: inset 0 0 0 2px #095dac;
+	}
+	.sign-day-cell.is-selected {
+		background: #ddeaff;
+		box-shadow: inset 0 0 0 2px #4f7df5;
 	}
 	.sign-day-num {
 		font-size: 15px;
