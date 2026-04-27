@@ -1,4 +1,4 @@
-  
+﻿  
 <template>
 	<div class="main-content" :style='{"padding":"50px 30px 30px"}'>
 		<!-- 列表页 -->
@@ -42,12 +42,18 @@
 							<div v-for="(c, idx) in calendarCells" :key="'c'+idx" :class="['sign-day-cell', c.pad ? 'is-pad' : '', c.today ? 'is-today' : '', !c.pad && selectedDate === c.dateStr ? 'is-selected' : '']" @click="onCalendarDayClick(c)">
 								<template v-if="!c.pad">
 									<span class="sign-day-num">{{ c.day }}</span>
-									<span v-if="c.markType === 'sign_ot'" class="sign-day-mark sign-day-mark-ot" title="当日已签到并有加班记录"></span>
-									<span v-else-if="c.markType === 'sign'" class="sign-day-mark sign-day-mark-sign" title="当日已签到"></span>
-									<span v-else-if="c.markType === 'leave'" class="sign-day-mark sign-day-mark-leave" title="当日有审批通过的请假记录"></span>
+									<span v-if="c.markType === 'sign_ot'" class="sign-day-status-row">
+										<span v-if="c.abnormalText" class="sign-day-abnormal">{{ c.abnormalText }}</span>
+										<span class="sign-day-mark sign-day-mark-ot" title="签到+加班"></span>
+									</span>
+									<span v-else-if="c.markType === 'sign'" class="sign-day-status-row">
+										<span v-if="c.abnormalText" class="sign-day-abnormal">{{ c.abnormalText }}</span>
+										<span class="sign-day-mark sign-day-mark-sign" title="已签到"></span>
+									</span>
+									<span v-else-if="c.markType === 'leave'" class="sign-day-mark sign-day-mark-leave" title="请假"></span>
 									<span v-else-if="c.markType === 'none' && c.isRestDay" class="sign-day-rest" title="休息日">休</span>
-									<span v-else-if="c.markType === 'none'" class="sign-day-mark sign-day-mark-none" title="当日无签到且无请假记录"></span>
-									<span v-else class="sign-day-mark sign-day-mark-idle" title="尚未加载当月签到数据（人事请先输入工号或姓名并点击查询；加载完成前不表示考勤结果）"></span>
+									<span v-else-if="c.markType === 'none'" class="sign-day-mark sign-day-mark-none" title="未签到"></span>
+									<span v-else class="sign-day-mark sign-day-mark-idle" title="未加载数据"></span>
 								</template>
 							</div>
 						</div>
@@ -63,7 +69,7 @@
 				</el-row>
 			</el-form>
 			<div :style='{"border":"1px solid #e9eafc","width":"100%","padding":" 0px 15px 20px","boxShadow":"none","borderRadius":"10px","background":"#fff"}'>
-<!--				<p v-if="listUsesMonthFilter && calendarMonthValid" class="sign-list-range-hint">下方列表与上方日历一致，仅展示签到时间落在「{{ calendarMonth }}」内的记录。若日历全红但您认为应有签到，请把「月份」选到与库里签到时间一致的年月（例如数据在 2025 年则选 2025-04）。</p>-->
+<!--				<p v-if="listUsesMonthFilter && calendarMonthValid" class="sign-list-range-hint">下方列表与上方日历一致，仅展示签到时间落在{{ calendarMonth }}内的记录。</p>-->
 				<el-table class="tables"
 					:stripe='false'
 					:style='{"padding":"0","borderColor":"#e7e8fc","borderRadius":"10px","borderWidth":"0px 0 0 0px","background":"#fff","width":"100%","borderStyle":"solid"}' 
@@ -143,7 +149,7 @@
 				:style='{"padding":"0","margin":"20px 0 0","whiteSpace":"nowrap","color":"#333","display":"flex","width":"100%","fontWeight":"500","justifyContent":"center"}'
 			></el-pagination>
 		</template>
-		<!-- 添加/修改页面  将父组件的search方法传递给子组件-->
+		<!-- 添加/修改页面 -->
 		<add-or-update v-if="addOrUpdateFlag" :parent="this" ref="addOrUpdate"></add-or-update>
 
 
@@ -187,14 +193,14 @@
 				previewVisible: false,
 				calendarMonth: ym,
 				calendarSignMap: {},
-				/** 人事/管理员未填工号、姓名时 true：不请求后台，日历用灰色占位 */
+				/** 浜轰簨/绠＄悊鍛樻湭濉伐鍙枫€佸鍚嶆椂 true锛氫笉璇锋眰鍚庡彴锛屾棩鍘嗙敤鐏拌壊鍗犱綅 */
 				signCalendarAwaitingFilter: false,
-				/** 当月日历是否已拿到一次后台列表（避免请求前整月误判为未签到） */
+				weekNames: ['日', '一', '二', '三', '四', '五', '六'],
+				/** 褰撴湀鏃ュ巻鏄惁宸叉嬁鍒颁竴娆″悗鍙板垪琛紙閬垮厤璇锋眰鍓嶆暣鏈堣鍒や负鏈鍒帮級 */
 				calendarDataReady: false,
 				calendarLoading: false,
 				calendarHint: '',
 				selectedDate: null,
-				weekNames: ['日', '一', '二', '三', '四', '五', '六'],
 				todaySignState: {
 					hasSignIn: false,
 					hasSignOut: false,
@@ -233,7 +239,7 @@
 				const ym = this.calendarMonth;
 				return !!(ym && /^\d{4}-\d{2}$/.test(ym));
 			},
-			/** 员工或人事已填工号/姓名时：列表按所选月份筛；人事未填则列表不按月筛，避免默认当前月无数据时整表空白 */
+			/** 员工或已填写工号/姓名时，列表按所选月份筛选。 */
 			listUsesMonthFilter() {
 				if (!this.calendarMonthValid) return false;
 				if (!this.queryChange(['人事管理员', '管理员'])) {
@@ -264,9 +270,13 @@
 					const ds = `${y}-${pad(m)}-${pad(day)}`;
 					const placeholder = this.signCalendarAwaitingFilter || !this.calendarDataReady
 					let markType = 'idle'
+					let abnormalText = ''
 					if (!placeholder) {
 						const mv = this.calendarSignMap[ds]
-						if (mv === 'leave') {
+						if (mv && typeof mv === 'object') {
+							markType = mv.markType || 'none'
+							abnormalText = mv.abnormalText || ''
+						} else if (mv === 'leave') {
 							markType = 'leave'
 						} else if (mv === 'sign_ot' || mv === 'sign') {
 							markType = mv
@@ -280,6 +290,7 @@
 						day,
 						dateStr: ds,
 						markType,
+						abnormalText,
 						today: ds === todayStr,
 						isRestDay: dow === 0 || dow === 1,
 					});
@@ -361,7 +372,7 @@
 			plain(s) {
 				return (s == null ? '' : String(s)).replace(/%/g, '').trim();
 			},
-			/** 与日历同一自然月，避免列表混入其他年份/月份造成「有签到却全红」的错觉 */
+			/** 与日历同一自然月，避免列表混入其他月份。 */
 			applyCalendarMonthRangeToParams(params) {
 				const ym = this.calendarMonth;
 				if (!ym || !/^\d{4}-\d{2}$/.test(ym)) return;
@@ -386,10 +397,10 @@
 			},
 			canQuickSign(type) {
 				const s = this.todaySignState || {}
-				if (type === '签到') return !s.hasSignIn && !s.hasSignOut && !s.hasOvertimeStart && !s.hasOvertimeEnd
-				if (type === '签退') return s.hasSignIn && !s.hasSignOut && !s.hasOvertimeStart && !s.hasOvertimeEnd
-				if (type === '加班开始') return s.hasSignIn && s.hasSignOut && !s.hasOvertimeStart && !s.hasOvertimeEnd
-				if (type === '加班结束') return s.hasOvertimeStart && !s.hasOvertimeEnd
+				if (this.isSignInType(type)) return !s.hasSignIn && !s.hasSignOut && !s.hasOvertimeStart && !s.hasOvertimeEnd
+				if (this.isSignOutType(type)) return s.hasSignIn && !s.hasSignOut && !s.hasOvertimeStart && !s.hasOvertimeEnd
+				if (String(type).indexOf('加班开始') >= 0 || String(type).indexOf('鍔犵彮寮€濮') >= 0) return s.hasSignIn && s.hasSignOut && !s.hasOvertimeStart && !s.hasOvertimeEnd
+				if (String(type).indexOf('加班结束') >= 0 || String(type).indexOf('鍔犵彮缁撴潫') >= 0) return s.hasOvertimeStart && !s.hasOvertimeEnd
 				return false
 			},
 			loadTodaySignState() {
@@ -429,14 +440,46 @@
 					if (data && data.code === 0 && data.data && data.data.list) {
 						data.data.list.forEach(row => {
 							const t = row.qiandaodidian == null ? '' : String(row.qiandaodidian)
-							if (t === '签到') state.hasSignIn = true
-							if (t === '签退') state.hasSignOut = true
-							if (t === '加班开始') state.hasOvertimeStart = true
-							if (t === '加班结束') state.hasOvertimeEnd = true
+							if (this.isSignInType(t)) state.hasSignIn = true
+							if (this.isSignOutType(t)) state.hasSignOut = true
+							if (t.indexOf('加班开始') >= 0 || t.indexOf('鍔犵彮寮€濮') >= 0) state.hasOvertimeStart = true
+							if (t.indexOf('加班结束') >= 0 || t.indexOf('鍔犵彮缁撴潫') >= 0) state.hasOvertimeEnd = true
 						})
 					}
 					this.todaySignState = state
 				})
+			},
+			isSignInType(type) {
+				const t = type == null ? '' : String(type).trim()
+				return t === '签到' || t === '绛惧埌' || t === 'ç­¾å°' ||
+					t.indexOf('签到') >= 0 || t.indexOf('绛惧埌') >= 0 || t.indexOf('ç­¾å°') >= 0
+			},
+			isSignOutType(type) {
+				const t = type == null ? '' : String(type).trim()
+				return t === '签退' || t === '绛鹃€€' || t === 'ç­¾é' ||
+					t.indexOf('签退') >= 0 || t.indexOf('绛鹃€€') >= 0 || t.indexOf('ç­¾é') >= 0
+			},
+			isOvertimeType(type) {
+				const t = type == null ? '' : String(type).trim()
+				return t.indexOf('加班') >= 0 || t.indexOf('鍔犵彮') >= 0 || t.indexOf('å ç­') >= 0
+			},
+			extractTimeText(value) {
+				if (!value) return ''
+				const m = String(value).match(/(\d{1,2}):(\d{2})(?::\d{2})?/)
+				if (!m) return ''
+				return (m[1].length === 1 ? '0' + m[1] : m[1]) + ':' + m[2]
+			},
+			dayWorkFlag(dayInfo) {
+				const flags = []
+				const signIn = this.extractTimeText(dayInfo.signTime)
+				const signOut = this.extractTimeText(dayInfo.signOutTime)
+				if (signIn && signIn > '08:00') {
+					flags.push('迟')
+				}
+				if (signOut && signOut < '18:00') {
+					flags.push('早')
+				}
+				return flags.join('+')
 			},
 			loadSignCalendar() {
 				const ym = this.calendarMonth;
@@ -450,7 +493,7 @@
 						this.calendarSignMap = {};
 						this.signCalendarAwaitingFilter = true;
 						this.calendarDataReady = false;
-						this.calendarHint = '请输入工号或姓名后点击「查询」，即可从后台加载当月签到日历（未查询前灰色圆点不代表考勤结果）。';
+						this.calendarHint = '请输入工号或姓名后点击查询，即可加载当月签到日历。';
 						return;
 					}
 				}
@@ -500,23 +543,34 @@
 							const t = row.qiandaoshijian
 							if (!t) return
 							const dayKey = String(t).substring(0, 10)
-							if (!byDay[dayKey]) byDay[dayKey] = { sign: false, ot: false }
+							if (!byDay[dayKey]) byDay[dayKey] = { sign: false, ot: false, signTime: null, signOutTime: null }
 							const typ = row.qiandaodidian == null ? '' : String(row.qiandaodidian).trim()
-							if (typ === '签到' || typ.indexOf('签到') >= 0) {
+							if (this.isSignInType(typ)) {
 								byDay[dayKey].sign = true
+								if (!byDay[dayKey].signTime || String(row.qiandaoshijian) < String(byDay[dayKey].signTime)) {
+									byDay[dayKey].signTime = row.qiandaoshijian
+								}
 							}
-							if (typ === '加班开始' || typ === '加班结束') {
+							if (this.isSignOutType(typ)) {
+								if (!byDay[dayKey].signOutTime || String(row.qiandaoshijian) > String(byDay[dayKey].signOutTime)) {
+									byDay[dayKey].signOutTime = row.qiandaoshijian
+								}
+							}
+							if (this.isOvertimeType(typ)) {
 								byDay[dayKey].ot = true
 							}
 						})
 					}
 					const map = {}
 					Object.keys(byDay).forEach((d) => {
-						const { sign, ot } = byDay[d]
-						if (sign && ot) map[d] = 'sign_ot'
-						else if (sign) map[d] = 'sign'
+						const info = byDay[d]
+						const markType = info.sign && info.ot ? 'sign_ot' : (info.sign ? 'sign' : 'none')
+						map[d] = {
+							markType,
+							abnormalText: info.sign ? this.dayWorkFlag(info) : ''
+						}
 					})
-					// 拉请假数据，把审批通过的请假日期段标记为 leave（不覆盖已有签到）
+					// 拉取请假数据，把审批通过的请假日期标记为 leave。
 					const leaveParams = {
 						page: 1, limit: 500,
 						sfsh: '是',
@@ -1421,6 +1475,23 @@
 		border-radius: 50%;
 		margin-top: 8px;
 		flex-shrink: 0;
+	}
+	.sign-day-status-row {
+		margin-top: 8px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 5px;
+		min-height: 18px;
+	}
+	.sign-day-status-row .sign-day-mark {
+		margin-top: 0;
+	}
+	.sign-day-abnormal {
+		color: #e02424;
+		font-size: 13px;
+		font-weight: 700;
+		line-height: 18px;
 	}
 	.sign-day-mark-ot {
 		background: linear-gradient(145deg, #f5d000, #e6a23c);

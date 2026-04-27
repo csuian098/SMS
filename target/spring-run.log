@@ -275,3 +275,100 @@ Identify and stop the process that's listening on port 8080 or configure this ap
 2026-04-27T17:49:39.579+08:00 ERROR 1792 --- [nio-8080-exec-6] com.yb.utils.JwtShiroUtil                : Token参数为空
 /springboot32e20828n/yuangongxinzi/recalculateAll
 2026-04-27T17:49:42.759+08:00 ERROR 1792 --- [nio-8080-exec-5] com.yb.utils.JwtShiroUtil                : Token参数为空
+/springboot32e20828n/yuangongxinzi/recalculateAll
+2026-04-27T17:49:45.956+08:00 ERROR 1792 --- [nio-8080-exec-7] com.yb.utils.JwtShiroUtil                : Token参数为空
+/springboot32e20828n/yuangongxinzi/recalculateAll
+2026-04-27T17:49:45.981+08:00 ERROR 1792 --- [nio-8080-exec-8] com.yb.utils.JwtShiroUtil                : Token参数为空
+/springboot32e20828n/yuangongxinzi/recalculateAll
+2026-04-27T17:49:49.238+08:00 ERROR 1792 --- [nio-8080-exec-1] com.yb.utils.JwtShiroUtil                : Token参数为空
+/springboot32e20828n/yuangongxinzi/recalculateAll
+2026-04-27T17:49:52.521+08:00 ERROR 1792 --- [nio-8080-exec-6] com.yb.utils.JwtShiroUtil                : Token参数为空
+/springboot32e20828n/yuangongxinzi/recalculateAll
+2026-04-27T17:49:55.826+08:00 ERROR 1792 --- [nio-8080-exec-5] com.yb.utils.JwtShiroUtil                : Token参数为空
+/springboot32e20828n/yuangongxinzi/recalculateAll
+2026-04-27T17:49:59.137+08:00 ERROR 1792 --- [nio-8080-exec-7] com.yb.utils.JwtShiroUtil                : Token参数为空
+/springboot32e20828n/yuangong/session
+2026-04-27T17:53:44.346+08:00  WARN 1792 --- [nio-8080-exec-7] o.a.c.util.SessionIdGeneratorBase        : Creation of SecureRandom instance for session ID generation using [SHA1PRNG] took [132] milliseconds.
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/renshiguanliyuan/count
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/renshiguanliyuan/count
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/renshiguanliyuan/count
+/springboot32e20828n/yuangongxinzi/count
+/springboot32e20828n/renshiguanliyuan/session
+/springboot32e20828n/renshiguanliyuan/session
+/springboot32e20828n/yuangongxinzi/count
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/renshiguanliyuan/count
+/springboot32e20828n/users/session
+/springboot32e20828n/users/session
+/springboot32e20828n/yuangong/group/xingbie
+/springboot32e20828n/renshiguanliyuan/session
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/renshiguanliyuan/count
+/springboot32e20828n/renshiguanliyuan/session
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/renshiguanliyuan/count
+/springboot32e20828n/yuangongqiandao/page
+/springboot32e20828n/yuangongqiandao/page
+/springboot32e20828n/yuangong/session
+2026-04-27T21:11:46.489+08:00 ERROR 1792 --- [nio-8080-exec-9] com.yb.utils.JwtShiroUtil                : Token已过期
+2026-04-27T21:11:46.489+08:00 ERROR 1792 --- [nio-8080-exec-4] com.yb.utils.JwtShiroUtil                : Token已过期
+2026-04-27T21:11:46.489+08:00 ERROR 1792 --- [nio-8080-exec-5] com.yb.utils.JwtShiroUtil                : Token已过期
+/springboot32e20828n/yuangongqiandao/page
+/springboot32e20828n/session
+/springboot32e20828n/yuangongqiandao/page
+2026-04-27T21:11:56.983+08:00 ERROR 1792 --- [nio-8080-exec-6] com.yb.utils.JwtShiroUtil                : Token参数为空
+2026-04-27T21:11:56.984+08:00 ERROR 1792 --- [nio-8080-exec-8] com.yb.utils.JwtShiroUtil                : Token参数为空
+2026-04-27T21:11:56.984+08:00 ERROR 1792 --- [io-8080-exec-10] com.yb.utils.JwtShiroUtil                : Token参数为空
+/springboot32e20828n/yuangongqiandao/page
+/springboot32e20828n/yuangongqiandao/page
+/springboot32e20828n/yuangong/session
+2026-04-27T21:13:32.181+08:00 ERROR 1792 --- [io-8080-exec-10] com.yb.utils.JwtShiroUtil                : Token已过期
+2026-04-27T21:13:32.181+08:00 ERROR 1792 --- [nio-8080-exec-9] com.yb.utils.JwtShiroUtil                : Token已过期
+2026-04-27T21:13:32.182+08:00 ERROR 1792 --- [nio-8080-exec-2] com.yb.utils.JwtShiroUtil                : Token已过期
+/springboot32e20828n/yuangongqiandao/page
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangongqiandao/page
+2026-04-27T21:13:34.476+08:00 ERROR 1792 --- [nio-8080-exec-9] com.yb.utils.JwtShiroUtil                : Token已过期
+2026-04-27T21:13:34.476+08:00 ERROR 1792 --- [nio-8080-exec-6] com.yb.utils.JwtShiroUtil                : Token已过期
+2026-04-27T21:13:34.477+08:00 ERROR 1792 --- [nio-8080-exec-3] com.yb.utils.JwtShiroUtil                : Token已过期
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/renshiguanliyuan/count
+/springboot32e20828n/renshiguanliyuan/session
+/springboot32e20828n/renshiguanliyuan/session
+/springboot32e20828n/renshiguanliyuan/count
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/renshiguanliyuan/count
+/springboot32e20828n/renshiguanliyuan/session
+/springboot32e20828n/renshiguanliyuan/session
+/springboot32e20828n/renshiguanliyuan/count
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/yuangongqiandao/page
+2026-04-27T21:45:53.802+08:00 ERROR 1792 --- [nio-8080-exec-4] com.yb.utils.JwtShiroUtil                : Token参数为空
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/renshiguanliyuan/count
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangongxinzi/count
+/springboot32e20828n/yuangongqiandao/page
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/renshiguanliyuan/count
+/springboot32e20828n/yuangong/session
+/springboot32e20828n/yuangongxinzi/count
+/springboot32e20828n/yuangongqiandao/page
+/springboot32e20828n/yuangongqiandao/page

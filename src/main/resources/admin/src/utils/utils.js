@@ -1,4 +1,4 @@
-import storage from './storage';
+﻿import storage from './storage';
 import menu from './menu';
 /**
  * 是否有权限
@@ -9,7 +9,7 @@ export function isAuth(tableName,key,index=1) {
 	if(!role){
 		role = '管理员';
 	}
-	let menus = menu.list();
+	let menus = menu.list() || [];
 	for(let i=0;i<menus.length;i++){
 		if(menus[i].roleName==role){
 			for(let j=0;j<menus[i].backMenu.length;j++){
@@ -30,7 +30,7 @@ export function isAuth(tableName,key,index=1) {
 }
 
 /**
- *  * 获取当前时间（yyyy-MM-dd hh:mm:ss）
+ *  * 鑾峰彇褰撳墠鏃堕棿锛坹yyy-MM-dd hh:mm:ss锛?
  *   */
 export function getCurDateTime() {
 	let currentTime = new Date(),
@@ -44,7 +44,7 @@ export function getCurDateTime() {
 }
 
 /**
- *  * 获取当前日期（yyyy-MM-dd）
+ *  * 鑾峰彇褰撳墠鏃ユ湡锛坹yyy-MM-dd锛?
  *   */
 export function getCurDate() {
 	let currentTime = new Date(),
@@ -53,4 +53,5 @@ export function getCurDate() {
 	day = currentTime.getDate() < 10 ? '0' + currentTime.getDate() : currentTime.getDate();
 	return year + "-" + month + "-" + day;
 }
+
 

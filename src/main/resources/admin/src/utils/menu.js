@@ -4,7 +4,7 @@ const menu = {
         if(storage.get("menus")) {
             return eval('(' + storage.get("menus")+ ')');
         } else {
-            return null;
+            return [];
         }
     }
 }
