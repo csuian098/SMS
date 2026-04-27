@@ -30,7 +30,8 @@
 						<span class="sign-calendar-title">{{ calendarMonth }} 考勤</span>
 						<span class="sign-legend"><span class="sign-dot sign-dot-ot"></span>签到+加班</span>
 						<span class="sign-legend"><span class="sign-dot sign-dot-sign"></span>已签到</span>
-						<span class="sign-legend"><span class="sign-dot sign-dot-none"></span>未签到/请假</span>
+						<span class="sign-legend"><span class="sign-dot sign-dot-leave"></span>请假（已审批）</span>
+						<span class="sign-legend"><span class="sign-dot sign-dot-none"></span>未签到/旷工</span>
 						<span class="sign-legend"><span class="sign-dot sign-dot-idle"></span>待查询（未加载后台数据）</span>
 					</div>
 					<div v-loading="calendarLoading" class="sign-calendar-inner">
@@ -43,7 +44,9 @@
 									<span class="sign-day-num">{{ c.day }}</span>
 									<span v-if="c.markType === 'sign_ot'" class="sign-day-mark sign-day-mark-ot" title="当日已签到并有加班记录"></span>
 									<span v-else-if="c.markType === 'sign'" class="sign-day-mark sign-day-mark-sign" title="当日已签到"></span>
-									<span v-else-if="c.markType === 'none'" class="sign-day-mark sign-day-mark-none" title="当日无签到记录（含请假等未出勤）"></span>
+									<span v-else-if="c.markType === 'leave'" class="sign-day-mark sign-day-mark-leave" title="当日有审批通过的请假记录"></span>
+									<span v-else-if="c.markType === 'none' && c.isRestDay" class="sign-day-rest" title="休息日">休</span>
+									<span v-else-if="c.markType === 'none'" class="sign-day-mark sign-day-mark-none" title="当日无签到且无请假记录"></span>
 									<span v-else class="sign-day-mark sign-day-mark-idle" title="尚未加载当月签到数据（人事请先输入工号或姓名并点击查询；加载完成前不表示考勤结果）"></span>
 								</template>
 							</div>
@@ -262,18 +265,23 @@
 					const placeholder = this.signCalendarAwaitingFilter || !this.calendarDataReady
 					let markType = 'idle'
 					if (!placeholder) {
-						if (this.calendarSignMap[ds] === 'sign_ot' || this.calendarSignMap[ds] === 'sign') {
-							markType = this.calendarSignMap[ds]
+						const mv = this.calendarSignMap[ds]
+						if (mv === 'leave') {
+							markType = 'leave'
+						} else if (mv === 'sign_ot' || mv === 'sign') {
+							markType = mv
 						} else {
 							markType = 'none'
 						}
 					}
+					const dow = new Date(y, m - 1, day).getDay()
 					cells.push({
 						pad: false,
 						day,
 						dateStr: ds,
 						markType,
 						today: ds === todayStr,
+						isRestDay: dow === 0 || dow === 1,
 					});
 				}
 				return cells;
@@ -508,7 +516,39 @@
 						if (sign && ot) map[d] = 'sign_ot'
 						else if (sign) map[d] = 'sign'
 					})
-					this.calendarSignMap = map
+					// 拉请假数据，把审批通过的请假日期段标记为 leave（不覆盖已有签到）
+					const leaveParams = {
+						page: 1, limit: 500,
+						sfsh: '是',
+						qingjiashijian_start: start,
+						qingjiashijian_end: end,
+					}
+					if (gh) leaveParams.gonghao = '%' + gh + '%'
+					if (xm) leaveParams.xingming = '%' + xm + '%'
+					this.$http({ url: 'qingjiashenqing/page', method: 'get', params: leaveParams })
+						.then(({ data: ld }) => {
+							if (ld && ld.code === 0 && ld.data && ld.data.list) {
+								const lpad = n => (n < 10 ? '0' : '') + n
+								const localDs = d => `${d.getFullYear()}-${lpad(d.getMonth()+1)}-${lpad(d.getDate())}`
+								ld.data.list.forEach(row => {
+									const s = row.qingjiashijian ? String(row.qingjiashijian).substring(0, 10) : null
+									const e = row.jieshushijian ? String(row.jieshushijian).substring(0, 10) : s
+									if (!s) return
+									const [sy, sm, sd] = s.split('-').map(Number)
+									const [ey, em, ed] = (e || s).split('-').map(Number)
+									let cur = new Date(sy, sm - 1, sd)
+									const endD = new Date(ey, em - 1, ed)
+									while (cur <= endD) {
+										const ds = localDs(cur)
+										map[ds] = 'leave'
+										cur.setDate(cur.getDate() + 1)
+									}
+								})
+							}
+							this.calendarSignMap = map
+						}).catch(() => {
+							this.calendarSignMap = map
+						})
 				}).catch(() => {
 					this.calendarLoading = false;
 					this.calendarDataReady = false;
@@ -1310,6 +1350,9 @@
 	.sign-dot-sign {
 		background: #19be6b;
 	}
+	.sign-dot-leave {
+		background: #409EFF;
+	}
 	.sign-dot-none {
 		background: #e02424;
 	}
@@ -1385,6 +1428,16 @@
 	}
 	.sign-day-mark-sign {
 		background: #19be6b;
+	}
+	.sign-day-rest {
+		margin-top: 8px;
+		color: #aaa;
+		font-size: 12px;
+		font-weight: 400;
+	}
+	.sign-day-mark-leave {
+		background: #409EFF;
+		box-shadow: 0 0 0 1px rgba(64, 158, 255, 0.4);
 	}
 	.sign-day-mark-none {
 		background: #e02424;
