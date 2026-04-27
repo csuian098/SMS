@@ -70,10 +70,23 @@ public class YuangongxinziController {
     @PostConstruct
     public void normalizePerformanceBonusOnStartup() {
         try {
-            normalizeAllPerformanceBonusAndSalary(false);
+            List<YuangongxinziEntity> list = yuangongxinziService.list(
+                new QueryWrapper<YuangongxinziEntity>().orderByAsc("id"));
+            if (list != null) {
+                for (YuangongxinziEntity item : list) {
+                    if (item == null) continue;
+                    if (!org.apache.commons.lang3.StringUtils.isBlank(item.getGonghao())) {
+                        fillAutoSalaryFields(item);
+                    } else {
+                        item.setJixiaojiangjin(0D);
+                        item.setShifagongzi(calculateShifaWithoutPerformance(item));
+                    }
+                    yuangongxinziService.updateById(item);
+                }
+            }
             performanceNormalizedAtRuntime = true;
         } catch (Exception e) {
-            System.err.println("[yuangongxinzi] startup normalize failed: " + e.getMessage());
+            System.err.println("[yuangongxinzi] startup recalc failed: " + e.getMessage());
         }
     }
 
@@ -307,8 +320,7 @@ public class YuangongxinziController {
         double weiqiandaokouxin = yuangongxinzi.getWeiqiandaokouxin() == null ? 0D : yuangongxinzi.getWeiqiandaokouxin();
         double jiaqikouxin = yuangongxinzi.getJiaqikouxin() == null ? 0D : yuangongxinzi.getJiaqikouxin();
         // 璇峰亣鎵ｆ鎸夎鍋囧ぉ鏁?100锛屼粠瀹炲彂宸ヨ祫涓澶栨墸鍑?
-        double qingjiaKoukuan = round2(totalQingjiatianshu * 100D);
-        double shifagongzi = round2(jibengongzi + jiabangongzi + gangweibutie + weiqiandaokouxin + jiaqikouxin - koukuanjine - qingjiaKoukuan);
+        double shifagongzi = round2(jibengongzi + jiabangongzi + gangweibutie + weiqiandaokouxin + jiaqikouxin - koukuanjine);
         yuangongxinzi.setShifagongzi(shifagongzi);
     }
 
@@ -357,9 +369,7 @@ public class YuangongxinziController {
         double weiqiandaokouxin = item.getWeiqiandaokouxin() == null ? 0D : item.getWeiqiandaokouxin();
         double jiaqikouxin = item.getJiaqikouxin() == null ? 0D : item.getJiaqikouxin();
         double koukuanjine = item.getKoukuanjine() == null ? 0D : item.getKoukuanjine();
-        int qingjiatianshu = item.getQingjiatianshu() == null ? 0 : item.getQingjiatianshu();
-        double qingjiaKoukuan = round2(qingjiatianshu * 100D);
-        return round2(jibengongzi + jiabangongzi + gangweibutie + weiqiandaokouxin + jiaqikouxin - koukuanjine - qingjiaKoukuan);
+        return round2(jibengongzi + jiabangongzi + gangweibutie + weiqiandaokouxin + jiaqikouxin - koukuanjine);
     }
 
     /**
@@ -457,7 +467,7 @@ public class YuangongxinziController {
             String dk = dayFmt.format(e.getQiandaoshijian());
             anyQiandaoDays.add(dk);
             String typ = StringUtils.trimToEmpty(e.getQiandaodidian());
-            if ("绛惧埌".equals(typ)) {
+            if ("签到".equals(typ)) {
                 signInDays.add(dk);
             }
         }
@@ -474,7 +484,8 @@ public class YuangongxinziController {
         double finalJiabanshichang = monthJiabanshichang > 0D ? monthJiabanshichang : monthJiabancishu;
         double jiabangongzi = round2(finalJiabanshichang * hourly);
 
-        double weiqiandaokouxin = round2(weiqiandaoTianshu * -200D);
+        // 未签到扣薪规则：基本工资 / 21.75 * 未签到天数 * -1.5（按日工资 1.5 倍惩罚扣薪）
+        double weiqiandaokouxin = round2(weiqiandaoTianshu * leaveDaily * -1.5D);
         // 鏂板彛寰勶細鍋囨湡鎵ｈ柂 = 鍩烘湰钖祫 / 21.75 脳 (-璇峰亣澶╂暟)
         double jiaqikouxin = round2(totalQingjiatianshu * -leaveDaily);
 
@@ -545,7 +556,7 @@ public class YuangongxinziController {
         stripToMidnight(end);
         while (!cal.after(end)) {
             int dow = cal.get(Calendar.DAY_OF_WEEK);
-            if (dow != Calendar.SATURDAY && dow != Calendar.SUNDAY) {
+            if (dow != Calendar.SUNDAY && dow != Calendar.MONDAY) {
                 String key = df.format(cal.getTime());
                 if (!signInDays.contains(key) && !leaveDays.contains(key)) {
                     cnt++;
@@ -594,7 +605,7 @@ public class YuangongxinziController {
             String type = item.getQiandaodidian().trim();
             if ("加班开始".equals(type)) {
                 start = item.getQiandaoshijian();
-            } else if ("鍔犵彮缁撴潫".equals(type) && start != null && !item.getQiandaoshijian().before(start)) {
+            } else if ("加班结束".equals(type) && start != null && !item.getQiandaoshijian().before(start)) {
                 totalMinutes += (item.getQiandaoshijian().getTime() - start.getTime()) / 60000L;
                 start = null;
             }

@@ -68,16 +68,13 @@
 				<el-form-item v-else class="input" label="请假天数" prop="qingjiatianshu" >
 					<el-input v-model="ruleForm.qingjiatianshu" placeholder="请假天数" readonly></el-input>
 				</el-form-item>
-				<el-form-item class="input" label="请假扣款">
-					<el-input :value="qingjiaKoukuanDisplay" placeholder="请假扣款" readonly></el-input>
-				</el-form-item>
 				<el-form-item class="input" label="未签到天数" prop="weiqiandaotianshu">
 					<el-input v-model="ruleForm.weiqiandaotianshu" placeholder="未签到天数" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" label="未签到扣薪" prop="weiqiandaokouxin">
 					<el-input v-model="ruleForm.weiqiandaokouxin" placeholder="未签到扣薪" readonly></el-input>
 				</el-form-item>
-				<el-form-item class="input" label="假期扣薪" prop="jiaqikouxin">
+				<el-form-item class="input" label="请假扣薪" prop="jiaqikouxin">
 					<el-input v-model="ruleForm.jiaqikouxin" placeholder="假期扣薪" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-if="type!='info'"  label="基本工资" prop="jibengongzi" >
@@ -310,9 +307,7 @@
 				const kk = Number(c.koukuanjine) || 0
 				const wqdkx = Number(c.weiqiandaokouxin) || 0
 				const jqkx = Number(c.jiaqikouxin) || 0
-				const qjts = Number(c.qingjiatianshu) || 0
-				const qjkk = qjts * 100
-				const a = jb + jb2 + gw + wqdkx + jqkx - kk - qjkk
+				const a = jb + jb2 + gw + wqdkx + jqkx - kk
 				this.ruleForm.shifagongzi = Number(a.toFixed(2))
 			},
 			calcJiabangongzi() {
@@ -575,6 +570,18 @@
 						if (this.type !== 'info') {
 							await this.syncKaoqinAndQingjiaData()
 							this.calcShifagongzi()
+						} else if (this.ruleForm.gonghao && this.ruleForm.dengjiriqi) {
+							// 详情页单独加载加班时长用于展示
+							this.$http({
+								url: 'yuangongxinzi/salaryAssistant',
+								method: 'get',
+								params: { gonghao: this.ruleForm.gonghao, dengjiriqi: this.ruleForm.dengjiriqi }
+							}).then(({ data }) => {
+								if (data && data.code === 0 && data.data) {
+									this.jiabanshichangTotal = Number(data.data.jiabanshichang) || 0
+									this.jiabancishuTotal = Number(data.data.jiabancishu) || 0
+								}
+							})
 						}
 						//解决前台上传图片后台不显示的问题
 						let reg=new RegExp('../../../upload','g')//g代表全部
