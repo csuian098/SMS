@@ -12,6 +12,7 @@
 	import register from '@/views/register'
 	import center from '@/views/center'
 	import renshiguanliyuan from '@/views/modules/renshiguanliyuan/list'
+	import yuangong from '@/views/modules/yuangong/list'
 	import yuangongxinzi from '@/views/modules/yuangongxinzi/list'
 	import yuangongqiandao from '@/views/modules/yuangongqiandao/list'
 	// import yuangongkaoqin from '@/views/modules/yuangongkaoqin/list' // 员工考勤模块已整体注释
@@ -62,6 +63,11 @@ export const routes = [{
 		path: '/renshiguanliyuanstat',
 		name: '人事管理员统计',
 		component: renshiguanliyuan
+	}
+	,{
+		path: '/yuangong',
+		name: '员工账号',
+		component: yuangong
 	}
 	,{
 		path: '/yuangongxinzi',

@@ -92,13 +92,14 @@
 							<div v-else>无图片</div>
 						</template>
 					</el-table-column>
-					<el-table-column :resizable='true' :sortable='true'
+					<!-- 请假天数列已隐藏：员工列表里不展示该字段 -->
+					<!-- <el-table-column :resizable='true' :sortable='true'
 												prop="qingjiatianshu"
 						label="请假天数">
 						<template slot-scope="scope">
 							{{scope.row.qingjiatianshu}}
 						</template>
-					</el-table-column>
+					</el-table-column> -->
 					<el-table-column :resizable='true' :sortable='true'
 												prop="zhiwei"
 						label="职位">

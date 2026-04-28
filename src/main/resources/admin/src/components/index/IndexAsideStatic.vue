@@ -283,10 +283,12 @@ export default {
 		},
 		filterMenusHiddenModules(menus) {
 			if (!menus || !menus.length) return
-			const hidden = ['yuangongkaoqin', 'yuangong', 'yuangongstat']
-			const adminHidden = ['zhiweidiaodong', 'jixiaokaohe', 'qingjiashenqing', 'yuangongqiandao', 'zhiweishensu']
+			const hidden = ['yuangongkaoqin', 'yuangongstat']
+			// 管理员保留"人事账号"管理人事，不直接管员工，所以隐藏 yuangong
+			const adminHidden = ['zhiweidiaodong', 'jixiaokaohe', 'qingjiashenqing', 'yuangongqiandao', 'zhiweishensu', 'yuangong']
+			// 人事管理员可以管理员工（员工管理菜单）
 			const hrHidden = ['jixiaokaohe']
-			const staffHidden = ['jixiaokaohe']
+			const staffHidden = ['jixiaokaohe', 'yuangong']
 			const role = this.$storage.get('role')
 
 			let merged = hidden.slice()

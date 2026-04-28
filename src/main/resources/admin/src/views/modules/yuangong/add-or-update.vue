@@ -87,12 +87,13 @@
 					<img v-else-if="ruleForm.touxiang.substring(0,4)=='http'" class="upload-img" style="margin-right:20px;" v-bind:key="index" :src="ruleForm.touxiang.split(',')[0]" width="100" height="100" @click="imgPreView(ruleForm.tupian.split(',')[0])">
 					<img v-else class="upload-img" style="margin-right:20px;" v-bind:key="index" v-for="(item,index) in ruleForm.touxiang.split(',')" :src="$base.url+item" width="100" height="100" @click="imgPreView($base.url+item)">
 				</el-form-item>
-				<el-form-item class="input" v-if="type!='info'"  label="请假天数" prop="qingjiatianshu" >
+				<!-- 请假天数字段已隐藏：薪资页"请假天数"按当月已审批请假申请实时统计，员工档案不再单独展示 -->
+				<!-- <el-form-item class="input" v-if="type!='info'"  label="请假天数" prop="qingjiatianshu" >
 					<el-input-number v-model="ruleForm.qingjiatianshu" placeholder="请假天数" :disabled="ro.qingjiatianshu"></el-input-number>
 				</el-form-item>
 				<el-form-item v-else class="input" label="请假天数" prop="qingjiatianshu" >
 					<el-input v-model="ruleForm.qingjiatianshu" placeholder="请假天数" readonly></el-input>
-				</el-form-item>
+				</el-form-item> -->
 				<el-form-item class="input" v-if="type!='info'"  label="职位" prop="zhiwei" >
 					<el-input v-model="ruleForm.zhiwei" placeholder="职位" clearable  :readonly="ro.zhiwei"></el-input>
 				</el-form-item>
