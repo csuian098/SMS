@@ -52,13 +52,14 @@
 							{{scope.row.method}}
 						</template>
 					</el-table-column>
-					<el-table-column :resizable='true' :sortable='true'
+					<!-- 请求时长(毫秒) 列已隐藏 -->
+					<!-- <el-table-column :resizable='true' :sortable='true'
 												prop="time"
 						label="请求时长(毫秒)">
 						<template slot-scope="scope">
 							{{scope.row.time}}
 						</template>
-					</el-table-column>
+					</el-table-column> -->
 					<el-table-column :resizable='true' :sortable='true'
 												prop="ip"
 						label="IP地址">

@@ -198,6 +198,7 @@
 				weekNames: ['日', '一', '二', '三', '四', '五', '六'],
 				/** 褰撴湀鏃ュ巻鏄惁宸叉嬁鍒颁竴娆″悗鍙板垪琛紙閬垮厤璇锋眰鍓嶆暣鏈堣鍒や负鏈鍒帮級 */
 				calendarDataReady: false,
+				calendarHasMonthData: false,
 				calendarLoading: false,
 				calendarHint: '',
 				selectedDate: null,
@@ -268,6 +269,8 @@
 				}
 				for (let day = 1; day <= daysInMonth; day++) {
 					const ds = `${y}-${pad(m)}-${pad(day)}`;
+					const dow = new Date(y, m - 1, day).getDay()
+					const isRestDay = dow === 0 || dow === 1
 					const placeholder = this.signCalendarAwaitingFilter || !this.calendarDataReady
 					let markType = 'idle'
 					let abnormalText = ''
@@ -281,10 +284,9 @@
 						} else if (mv === 'sign_ot' || mv === 'sign') {
 							markType = mv
 						} else {
-							markType = 'none'
+							markType = isRestDay || (this.calendarHasMonthData && this.isClosedAttendanceDay(ds)) ? 'none' : 'idle'
 						}
 					}
-					const dow = new Date(y, m - 1, day).getDay()
 					cells.push({
 						pad: false,
 						day,
@@ -292,7 +294,7 @@
 						markType,
 						abnormalText,
 						today: ds === todayStr,
-						isRestDay: dow === 0 || dow === 1,
+						isRestDay,
 					});
 				}
 				return cells;
@@ -469,6 +471,14 @@
 				if (!m) return ''
 				return (m[1].length === 1 ? '0' + m[1] : m[1]) + ':' + m[2]
 			},
+			todayDateStr() {
+				const d = new Date()
+				const p = n => (n < 10 ? '0' : '') + n
+				return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+			},
+			isClosedAttendanceDay(dateStr) {
+				return !!dateStr && dateStr < this.todayDateStr()
+			},
 			dayWorkFlag(dayInfo) {
 				const flags = []
 				const signIn = this.extractTimeText(dayInfo.signTime)
@@ -493,12 +503,14 @@
 						this.calendarSignMap = {};
 						this.signCalendarAwaitingFilter = true;
 						this.calendarDataReady = false;
+						this.calendarHasMonthData = false;
 						this.calendarHint = '请输入工号或姓名后点击查询，即可加载当月签到日历。';
 						return;
 					}
 				}
 				this.signCalendarAwaitingFilter = false;
 				this.calendarDataReady = false;
+				this.calendarHasMonthData = false;
 				this.calendarHint = '';
 				const parts = ym.split('-').map(Number);
 				const y = parts[0];
@@ -534,6 +546,7 @@
 						this.$message.error((data && data.msg) || '加载签到日历失败')
 						this.calendarSignMap = {}
 						this.calendarDataReady = false
+						this.calendarHasMonthData = false
 						return
 					}
 					this.calendarDataReady = true
@@ -561,6 +574,7 @@
 							}
 						})
 					}
+					const signHasRows = Object.keys(byDay).length > 0
 					const map = {}
 					Object.keys(byDay).forEach((d) => {
 						const info = byDay[d]
@@ -581,7 +595,9 @@
 					if (xm) leaveParams.xingming = '%' + xm + '%'
 					this.$http({ url: 'qingjiashenqing/page', method: 'get', params: leaveParams })
 						.then(({ data: ld }) => {
+							let leaveHasRows = false
 							if (ld && ld.code === 0 && ld.data && ld.data.list) {
+								leaveHasRows = ld.data.list.length > 0
 								const lpad = n => (n < 10 ? '0' : '') + n
 								const localDs = d => `${d.getFullYear()}-${lpad(d.getMonth()+1)}-${lpad(d.getDate())}`
 								ld.data.list.forEach(row => {
@@ -599,13 +615,18 @@
 									}
 								})
 							}
+							this.calendarHasMonthData = signHasRows || leaveHasRows
+							this.calendarHint = this.calendarHasMonthData ? '' : `${ym} 暂无后台签到或请假数据。`
 							this.calendarSignMap = map
 						}).catch(() => {
+							this.calendarHasMonthData = signHasRows
+							this.calendarHint = this.calendarHasMonthData ? '' : `${ym} 暂无后台签到数据。`
 							this.calendarSignMap = map
 						})
 				}).catch(() => {
 					this.calendarLoading = false;
 					this.calendarDataReady = false;
+					this.calendarHasMonthData = false;
 					this.$message.error('加载签到日历失败，请检查网络后重试')
 				});
 			},

@@ -253,7 +253,7 @@ public class YuangongxinziController {
      * 鍚庡彴淇濆瓨
      */
     @RequestMapping("/save")
-    @SysLog("鏂板鍛樺伐钖祫")
+    @SysLog("新增员工薪资")
     public R save(@RequestBody YuangongxinziEntity yuangongxinzi, HttpServletRequest request){
         //ValidatorUtils.validateEntity(yuangongxinzi);
         fillAutoSalaryFields(yuangongxinzi);
@@ -264,7 +264,7 @@ public class YuangongxinziController {
     /**
      * 鍓嶅彴淇濆瓨
      */
-    @SysLog("鏂板鍛樺伐钖祫")
+    @SysLog("新增员工薪资")
     @RequestMapping("/add")
     public R add(@RequestBody YuangongxinziEntity yuangongxinzi, HttpServletRequest request){
         //ValidatorUtils.validateEntity(yuangongxinzi);
@@ -282,7 +282,7 @@ public class YuangongxinziController {
      */
     @RequestMapping("/update")
     @Transactional
-    @SysLog("淇敼鍛樺伐钖祫")
+    @SysLog("修改员工薪资")
     public R update(@RequestBody YuangongxinziEntity yuangongxinzi, HttpServletRequest request){
         //ValidatorUtils.validateEntity(yuangongxinzi);
         //鍏ㄩ儴鏇存柊
@@ -397,7 +397,7 @@ public class YuangongxinziController {
      */
     @RequestMapping("/recalculateAll")
     @Transactional
-    @SysLog("鎵归噺閲嶇畻鍛樺伐钖祫")
+    @SysLog("批量重算员工薪资")
     public R recalculateAll() {
         List<YuangongxinziEntity> list = yuangongxinziService.list(new QueryWrapper<YuangongxinziEntity>().orderByAsc("id"));
         if (list == null || list.isEmpty()) {
@@ -476,8 +476,9 @@ public class YuangongxinziController {
             collectLeaveDaysInMonth(q, monthStart, monthEnd, leaveDays, dayFmt);
         }
 
-        int weiqiandaoTianshu = countWeekdaysWithoutSignNoLeave(monthStart, monthEnd, signInDays, leaveDays);
-        int weekendAbsent = countWeekendNoAttendance(monthStart, monthEnd, anyQiandaoDays, leaveDays);
+        Date attendanceCountEnd = getCompletedAttendanceEnd(monthEnd);
+        int weiqiandaoTianshu = countWeekdaysWithoutSignNoLeave(monthStart, attendanceCountEnd, signInDays, leaveDays);
+        int weekendAbsent = countWeekendNoAttendance(monthStart, attendanceCountEnd, anyQiandaoDays, leaveDays);
 
         double hourly = jibengongzi <= 0D ? 0D : jibengongzi / 116D;
         double leaveDaily = jibengongzi <= 0D ? 0D : jibengongzi / 21.75D;
@@ -543,6 +544,18 @@ public class YuangongxinziController {
         c.set(Calendar.MINUTE, 0);
         c.set(Calendar.SECOND, 0);
         c.set(Calendar.MILLISECOND, 0);
+    }
+
+    private Date getCompletedAttendanceEnd(Date monthEnd) {
+        Calendar yesterdayEnd = Calendar.getInstance();
+        stripToMidnight(yesterdayEnd);
+        yesterdayEnd.add(Calendar.DAY_OF_MONTH, -1);
+        yesterdayEnd.set(Calendar.HOUR_OF_DAY, 23);
+        yesterdayEnd.set(Calendar.MINUTE, 59);
+        yesterdayEnd.set(Calendar.SECOND, 59);
+        yesterdayEnd.set(Calendar.MILLISECOND, 999);
+        Date completedEnd = yesterdayEnd.getTime();
+        return monthEnd.before(completedEnd) ? monthEnd : completedEnd;
     }
 
     private int countWeekdaysWithoutSignNoLeave(Date monthStart, Date monthEnd, Set<String> signInDays, Set<String> leaveDays) {
@@ -644,7 +657,7 @@ public class YuangongxinziController {
      */
     @RequestMapping("/shBatch")
     @Transactional
-    @SysLog("瀹℃牳鍛樺伐钖祫")
+    @SysLog("审核员工薪资")
     public R update(@RequestBody Long[] ids, @RequestParam String sfsh, @RequestParam(required = false, defaultValue = "") String shhf){
         List<YuangongxinziEntity> list = new ArrayList<YuangongxinziEntity>();
         for(Long id : ids) {
@@ -661,7 +674,7 @@ public class YuangongxinziController {
      * 鏀粯鐘舵€佹壒閲忔洿鏂?     */
     @RequestMapping("/zfBatch")
     @Transactional
-    @SysLog("鏀粯鍛樺伐钖祫")
+    @SysLog("支付员工薪资")
     public R zfBatch(@RequestBody Long[] ids, @RequestParam String ispay){
         List<YuangongxinziEntity> list = new ArrayList<YuangongxinziEntity>();
         for(Long id : ids) {
@@ -684,7 +697,7 @@ public class YuangongxinziController {
      * 鍒犻櫎
      */
     @RequestMapping("/delete")
-    @SysLog("鍒犻櫎鍛樺伐钖祫")
+    @SysLog("删除员工薪资")
     public R delete(@RequestBody Long[] ids){
         yuangongxinziService.removeBatchByIds(Arrays.asList(ids));
         return R.ok();

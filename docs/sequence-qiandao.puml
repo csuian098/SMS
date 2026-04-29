@@ -1,0 +1,42 @@
+@startuml 员工签到顺序图
+title 图3-1 员工签到用例顺序图（与系统代码一致）
+
+skinparam sequenceArrowThickness 1
+skinparam roundcorner 8
+skinparam shadowing false
+skinparam ParticipantPadding 25
+skinparam BoxPadding 10
+
+actor "员工" as User
+participant "签到界面\n(yuangongqiandao/list.vue)" as UI
+participant "签到控制器\n(YuangongqiandaoController)" as Ctrl
+participant "签到服务\n(YuangongqiandaoService)" as Svc
+database "数据库\n(yuangongqiandao 表)" as DB
+
+== 阶段一：加载页面 ==
+User -> UI   : 1. 打开"员工签到"页面
+UI   -> Ctrl : 2. GET /yuangongqiandao/page
+Ctrl -> Svc  : 3. queryPage(params)
+Svc  -> DB   : 4. SELECT * FROM yuangongqiandao
+DB   --> Svc : 5. 历史签到记录
+Svc  --> Ctrl: 6. PageUtils
+Ctrl --> UI  : 7. {code:0, data:[...]}
+UI   --> User: 8. 渲染列表 + 月历
+
+== 阶段二：打卡 ==
+User -> UI   : 9. 点击[签到/签退/加班开始/加班结束]
+note right of UI
+  10. 前端本地处理：
+  - canQuickSign() 按钮状态校验
+  - new Date() 取当前时间
+  - 从 session 取 gonghao / 姓名 / 头像
+end note
+UI   -> Ctrl : 11. POST /yuangongqiandao/save\n{gonghao, qiandaoshijian, qiandaodidian, ...}
+Ctrl -> Svc  : 12. save(entity)
+Svc  -> DB   : 13. INSERT INTO yuangongqiandao
+DB   --> Svc : 14. affectedRows = 1
+Svc  --> Ctrl: 15. true
+Ctrl --> UI  : 16. {code:0}
+UI   --> User: 17. 显示"XX 已记录" + 刷新列表/日历
+
+@enduml
