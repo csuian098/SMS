@@ -13,34 +13,34 @@ SLF4J(I): Actual provider is of type [ch.qos.logback.classic.spi.LogbackServiceP
 
  :: Spring Boot ::                (v3.3.0)
 
-2026-04-29T21:30:24.758+08:00  INFO 2288 --- [           main] com.yb.SpringbootSchemaApplication       : Starting SpringbootSchemaApplication v0.0.1-SNAPSHOT using Java 17.0.12 with PID 2288 (F:\springboot32e20828n\springboot32e20828n\target\springboot32e20828n-0.0.1-SNAPSHOT.jar started by a in F:\springboot32e20828n\springboot32e20828n)
-2026-04-29T21:30:24.801+08:00  INFO 2288 --- [           main] com.yb.SpringbootSchemaApplication       : No active profile set, falling back to 1 default profile: "default"
-2026-04-29T21:30:35.025+08:00  WARN 2288 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'jwtShiroConfig' of type [com.yb.config.JwtShiroConfig$$SpringCGLIB$$0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [lifecycleBeanPostProcessor] is declared through a non-static factory method on that class; consider declaring it as static instead.
-2026-04-29T21:30:36.552+08:00  WARN 2288 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'jwtShiroUtil' of type [com.yb.utils.JwtShiroUtil] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor []? Check the corresponding BeanPostProcessor declaration and its dependencies.
-2026-04-29T21:30:36.561+08:00  WARN 2288 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'jwtShiroRealm' of type [com.yb.config.JwtShiroRealm] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor []? Check the corresponding BeanPostProcessor declaration and its dependencies.
-2026-04-29T21:30:37.890+08:00  WARN 2288 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'securityManager' of type [org.apache.shiro.web.mgt.DefaultWebSecurityManager] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor []? Check the corresponding BeanPostProcessor declaration and its dependencies.
-2026-04-29T21:30:38.021+08:00  WARN 2288 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'authorizationAttributeSourceAdvisor' of type [org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor []? Check the corresponding BeanPostProcessor declaration and its dependencies.
-2026-04-29T21:30:43.019+08:00  INFO 2288 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2026-04-29T21:30:43.488+08:00  INFO 2288 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-04-29T21:30:43.492+08:00  INFO 2288 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.24]
-2026-04-29T21:30:52.550+08:00  INFO 2288 --- [           main] org.apache.jasper.servlet.TldScanner     : At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
-2026-04-29T21:30:52.744+08:00  INFO 2288 --- [           main] o.a.c.c.C.[.[.[/springboot32e20828n]     : Initializing Spring embedded WebApplicationContext
-2026-04-29T21:30:52.758+08:00  INFO 2288 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 26737 ms
+2026-05-01T15:47:01.332+08:00  INFO 25692 --- [           main] com.yb.SpringbootSchemaApplication       : Starting SpringbootSchemaApplication v0.0.1-SNAPSHOT using Java 17.0.12 with PID 25692 (F:\springboot32e20828n\springboot32e20828n\target\springboot32e20828n-0.0.1-SNAPSHOT.jar started by a in F:\springboot32e20828n\springboot32e20828n)
+2026-05-01T15:47:01.404+08:00  INFO 25692 --- [           main] com.yb.SpringbootSchemaApplication       : No active profile set, falling back to 1 default profile: "default"
+2026-05-01T15:47:07.958+08:00  WARN 25692 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'jwtShiroConfig' of type [com.yb.config.JwtShiroConfig$$SpringCGLIB$$0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [lifecycleBeanPostProcessor] is declared through a non-static factory method on that class; consider declaring it as static instead.
+2026-05-01T15:47:08.727+08:00  WARN 25692 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'jwtShiroUtil' of type [com.yb.utils.JwtShiroUtil] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor []? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-05-01T15:47:08.733+08:00  WARN 25692 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'jwtShiroRealm' of type [com.yb.config.JwtShiroRealm] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor []? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-05-01T15:47:09.195+08:00  WARN 25692 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'securityManager' of type [org.apache.shiro.web.mgt.DefaultWebSecurityManager] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor []? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-05-01T15:47:09.286+08:00  WARN 25692 --- [           main] trationDelegate$BeanPostProcessorChecker : Bean 'authorizationAttributeSourceAdvisor' of type [org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor []? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-05-01T15:47:11.696+08:00  INFO 25692 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-05-01T15:47:11.927+08:00  INFO 25692 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-05-01T15:47:11.931+08:00  INFO 25692 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.24]
+2026-05-01T15:47:18.859+08:00  INFO 25692 --- [           main] org.apache.jasper.servlet.TldScanner     : At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+2026-05-01T15:47:18.996+08:00  INFO 25692 --- [           main] o.a.c.c.C.[.[.[/springboot32e20828n]     : Initializing Spring embedded WebApplicationContext
+2026-05-01T15:47:19.002+08:00  INFO 25692 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 16667 ms
 Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
  _ _   |_  _ _|_. ___ _ |    _ 
 | | |\/|_)(_| | |_\  |_)||_|_\ 
      /               |         
                         3.5.5 
-2026-04-29T21:31:10.658+08:00  INFO 2288 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-04-29T21:31:11.909+08:00  INFO 2288 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@323e026d
-2026-04-29T21:31:11.921+08:00  INFO 2288 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-04-29T21:32:09.443+08:00  INFO 2288 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/springboot32e20828n'
-2026-04-29T21:32:09.531+08:00  INFO 2288 --- [           main] com.yb.SpringbootSchemaApplication       : Started SpringbootSchemaApplication in 108.783 seconds (process running for 114.84)
-2026-04-29T21:32:12.858+08:00  INFO 2288 --- [nio-8080-exec-1] o.a.c.c.C.[.[.[/springboot32e20828n]     : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-04-29T21:32:12.860+08:00  INFO 2288 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-04-29T21:32:12.873+08:00  INFO 2288 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 12 ms
-/springboot32e20828n/syslog/page
-2026-04-29T21:32:13.297+08:00 ERROR 2288 --- [nio-8080-exec-1] com.yb.utils.JwtShiroUtil                : Token参数为空
+2026-05-01T15:47:31.337+08:00  INFO 25692 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-05-01T15:47:32.712+08:00  INFO 25692 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@33187485
+2026-05-01T15:47:32.729+08:00  INFO 25692 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-05-01T15:48:17.756+08:00  INFO 25692 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/springboot32e20828n'
+2026-05-01T15:48:17.854+08:00  INFO 25692 --- [           main] com.yb.SpringbootSchemaApplication       : Started SpringbootSchemaApplication in 80.2 seconds (process running for 84.727)
+2026-05-01T15:48:20.770+08:00  INFO 25692 --- [nio-8080-exec-1] o.a.c.c.C.[.[.[/springboot32e20828n]     : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-01T15:48:20.772+08:00  INFO 25692 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-05-01T15:48:20.777+08:00  INFO 25692 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 4 ms
+/springboot32e20828n/yuangong/page
+2026-05-01T15:48:21.072+08:00 ERROR 25692 --- [nio-8080-exec-1] com.yb.utils.JwtShiroUtil                : Token参数为空
 org.apache.shiro.authc.AuthenticationException: Token无效或已过期
 	at com.yb.config.JwtShiroRealm.doGetAuthenticationInfo(JwtShiroRealm.java:48)
 	at org.apache.shiro.realm.AuthenticatingRealm.getAuthenticationInfo(AuthenticatingRealm.java:571)
@@ -98,3 +98,6 @@ org.apache.shiro.authc.AuthenticationException: Token无效或已过期
 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
 	at java.base/java.lang.Thread.run(Thread.java:842)
+/springboot32e20828n/renshiguanliyuan/session
+/springboot32e20828n/yuangong/count
+/springboot32e20828n/renshiguanliyuan/session

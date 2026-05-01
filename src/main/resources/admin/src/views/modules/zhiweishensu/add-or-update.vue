@@ -396,6 +396,10 @@
 										message: "submit success",
 										duration: 1500,
 										onClose: () => {
+											if(this.parent._pendingAppealRow && typeof this.parent.markAppealSubmitted === 'function'){
+												this.parent.markAppealSubmitted(this.parent._pendingAppealRow);
+												this.parent._pendingAppealRow = null;
+											}
 											this.parent.showFlag = true;
 											this.parent.addOrUpdateFlag = false;
 											this.parent.zhiweishensuCrossAddOrUpdateFlag = false;

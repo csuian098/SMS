@@ -173,6 +173,10 @@ public class QingjiashenqingController {
     @SysLog("新增请假申请")
     public R save(@RequestBody QingjiashenqingEntity qingjiashenqing, HttpServletRequest request){
         //ValidatorUtils.validateEntity(qingjiashenqing);
+        R duplicateCheck = checkDuplicateLeave(qingjiashenqing, null);
+        if (duplicateCheck != null) {
+            return duplicateCheck;
+        }
         qingjiashenqingService.save(qingjiashenqing);
         return R.ok().put("data",qingjiashenqing.getId());
     }
@@ -184,6 +188,10 @@ public class QingjiashenqingController {
     @RequestMapping("/add")
     public R add(@RequestBody QingjiashenqingEntity qingjiashenqing, HttpServletRequest request){
         //ValidatorUtils.validateEntity(qingjiashenqing);
+        R duplicateCheck = checkDuplicateLeave(qingjiashenqing, null);
+        if (duplicateCheck != null) {
+            return duplicateCheck;
+        }
         qingjiashenqingService.save(qingjiashenqing);
         return R.ok().put("data",qingjiashenqing.getId());
     }
@@ -200,6 +208,10 @@ public class QingjiashenqingController {
     @SysLog("修改请假申请")
     public R update(@RequestBody QingjiashenqingEntity qingjiashenqing, HttpServletRequest request){
         //ValidatorUtils.validateEntity(qingjiashenqing);
+        R duplicateCheck = checkDuplicateLeave(qingjiashenqing, qingjiashenqing.getId());
+        if (duplicateCheck != null) {
+            return duplicateCheck;
+        }
         //全部更新
         qingjiashenqingService.updateById(qingjiashenqing);
         return R.ok();
@@ -244,5 +256,38 @@ public class QingjiashenqingController {
 
 
 
+
+    private R checkDuplicateLeave(QingjiashenqingEntity qingjiashenqing, Long excludeId) {
+        if (StringUtils.isBlank(qingjiashenqing.getGonghao())) {
+            return R.error("工号不能为空");
+        }
+        if (qingjiashenqing.getQingjiashijian() == null || qingjiashenqing.getJieshushijian() == null) {
+            return R.error("请假时间和结束时间不能为空");
+        }
+        if (!qingjiashenqing.getQingjiashijian().before(qingjiashenqing.getJieshushijian())) {
+            return R.error("结束时间必须晚于请假时间");
+        }
+
+        QueryWrapper<QingjiashenqingEntity> wrapper = new QueryWrapper<QingjiashenqingEntity>()
+                .eq("gonghao", qingjiashenqing.getGonghao())
+                .lt("qingjiashijian", qingjiashenqing.getJieshushijian())
+                .gt("jieshushijian", qingjiashenqing.getQingjiashijian())
+                .and(w -> w.isNull("sfsh").or().ne("sfsh", "否"));
+        if (excludeId != null) {
+            wrapper.ne("id", excludeId);
+        }
+
+        List<QingjiashenqingEntity> overlapLeaves = qingjiashenqingService.list(wrapper);
+        if (!overlapLeaves.isEmpty()) {
+            boolean sameTime = overlapLeaves.stream().anyMatch(item ->
+                    qingjiashenqing.getQingjiashijian().equals(item.getQingjiashijian())
+                            && qingjiashenqing.getJieshushijian().equals(item.getJieshushijian()));
+            if (sameTime) {
+                return R.error("重复请假：相同时间段已有请假申请，只有上一条被人事管理员审核不通过后才可以重新申请");
+            }
+            return R.error("请假时间与已有请假申请重叠，只有上一条被人事管理员审核不通过后才可以重新申请");
+        }
+        return null;
+    }
 
 }

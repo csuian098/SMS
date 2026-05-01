@@ -144,6 +144,11 @@ export default {
 	methods: {
 		menuLabel(item) {
 			if (!item) return ''
+			const role = this.$storage.get('role')
+			const roleText = String(role || '')
+			const isHrRole = roleText === '人事管理员' || roleText === 'renshiguanliyuan' || roleText.includes('人事') || roleText.includes('浜轰簨')
+			// 人事管理员看到的"请假申请"显示为"请假管理"，其他角色保持原样
+			const qingjiaLabel = isHrRole ? '请假管理' : '请假申请'
 			const childTables = (item.child || []).map(child => child.tableName).filter(Boolean)
 			if (!item.tableName && childTables.length) {
 				if (childTables.includes('menu') || childTables.includes('syslog')) return '系统管理'
@@ -155,7 +160,7 @@ export default {
 				if (childTables.includes('zhiweidiaodong')) return '职位调动'
 				if (childTables.includes('zhiweixinxi')) return '职位管理'
 				if (childTables.includes('zhiweishensu')) return '申诉管理'
-				if (childTables.includes('qingjiashenqing')) return '请假申请'
+				if (childTables.includes('qingjiashenqing')) return qingjiaLabel
 			}
 			const tableName = item.tableName
 			const tableMap = {
@@ -167,7 +172,7 @@ export default {
 				zhiweidiaodong: '职位调动',
 				zhiweixinxi: '职位管理',
 				zhiweishensu: '申诉管理',
-				qingjiashenqing: '请假申请',
+				qingjiashenqing: qingjiaLabel,
 				menu: '菜单列表',
 				syslog: '系统日志',
 				center: '个人信息'

@@ -13,7 +13,7 @@ export function isAuth(tableName,key,index=1) {
 	for(let i=0;i<menus.length;i++){
 		if(menus[i].roleName==role){
 			for(let j=0;j<menus[i].backMenu.length;j++){
-				for(let k=0;k<menus[i].backMenu[j].child.length;k++){
+				for(let k=0;k<(menus[i].backMenu[j].child||[]).length;k++){
 					if(tableName==menus[i].backMenu[j].child[k].tableName){
 						let buttons = menus[i].backMenu[j].child[k].buttons
 						for(let n in buttons) {

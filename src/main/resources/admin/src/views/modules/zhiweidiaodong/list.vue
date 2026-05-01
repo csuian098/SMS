@@ -1,19 +1,19 @@
-  
+﻿  
 <template>
 	<div class="main-content" :style='{"padding":"50px 30px 30px"}'>
 		<!-- 列表页 -->
 		<template v-if="showFlag ">
 			<el-form class="center-form-pv" :style='{"width":"100%","padding":"0","margin":"0 0 20px"}' :inline="true" :model="searchForm">
 				<el-row :style='{"padding":"10px 20px 0","boxShadow":"0 3px 3px 0px #095dac","borderRadius":"0px","flexWrap":"wrap","background":"#fff","display":"flex","width":"100%","position":"relative"}' >
-					<div v-if="queryChange(['人事管理员', '管理员'])" :style='{"margin":"0 1% 10px 0","display":"flex"}' class="select" label="姓名" prop="xingming">
+					<div v-if="isHrPositionMode" :style='{"margin":"0 1% 10px 0","display":"flex"}' class="select" label="姓名" prop="xingming">
 						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">姓名</label>
-						<el-select clearable filterable allow-create default-first-option v-model="searchForm.xingming" placeholder="请选择或输入姓名" >
+						<el-select clearable filterable allow-create default-first-option v-model="searchForm.xingming" placeholder="请选择或输入姓名">
 							<el-option v-for="(item,index) in xingmingOptions" v-bind:key="index" :label="item" :value="item"></el-option>
 						</el-select>
 					</div>
 					<div  :style='{"margin":"0 1% 10px 0","display":"flex"}' class="select" label="现职位" prop="xianzhiwei">
 						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">现职位</label>
-						<el-select clearable v-model="searchForm.xianzhiwei" placeholder="请选择现职位" >
+						<el-select clearable v-model="searchForm.xianzhiwei" placeholder="请选择现职位">
 							<el-option v-for="(item,index) in xianzhiweiOptions" v-bind:key="index" :label="item" :value="item"></el-option>
 						</el-select>
 					</div>
@@ -45,12 +45,12 @@
 					:stripe='false'
 					:style='{"padding":"0","borderColor":"#e7e8fc","borderRadius":"10px","borderWidth":"0px 0 0 0px","background":"#fff","width":"100%","borderStyle":"solid"}' 
 					:border='false'
-					v-if="isAuth('zhiweidiaodong','查看')"
+					v-if="true"
 					:data="dataList"
 					v-loading="dataListLoading"
 					@selection-change="selectionChangeHandler">
 					<el-table-column v-if="!isHrPositionMode" :resizable='true' type="selection" align="center" width="50"></el-table-column>
-					<el-table-column :resizable='true' :sortable='true' label="序号" type="index" width="50" />
+					<el-table-column :resizable='true' :sortable='true' label="序号" type="index" width="50"></el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="gonghao"
 						label="工号">
@@ -106,11 +106,11 @@
 								<span class="icon iconfont icon-chakan2" :style='{"margin":"0 0px","fontSize":"14px","color":"#333","display":"none","height":"40px"}'></span>
 								详情
 							</el-button>
-							<el-button class="btn8" v-if="!isHrPositionMode && isAuth('zhiweidiaodong','申诉')&&(!scope.row.zhuangtai||scope.row.zhuangtai=='待完成')&&!isActionButtonsHidden(scope.row)" @click="zhiweishensuCrossAddOrUpdateHandler(scope.row,'cross','','','[1]','你已申诉')" type="success">
+							<el-button class="btn8" v-if="!isHrPositionMode && isAuth('zhiweidiaodong','申诉')&&!isAgreeConfirmed(scope.row)" :disabled="isAppealSubmitted(scope.row)" @click="zhiweishensuCrossAddOrUpdateHandler(scope.row,'cross','','','[1]','你已申诉')" type="success">
 								<span class="icon iconfont icon-xihuan" :style='{"margin":"0 0px","fontSize":"14px","color":"#333","display":"none","height":"40px"}'></span>
 								申诉
 							</el-button>
-							<el-button class="btn8" v-if="!isHrPositionMode && isAuth('zhiweidiaodong','同意')&&(!scope.row.zhuangtai||scope.row.zhuangtai=='待完成')&&!isActionButtonsHidden(scope.row)" @click="tongyixinxiCrossAddOrUpdateHandler(scope.row,'cross','','','[1]','请勿重复操作!')" type="success">
+							<el-button class="btn8" v-if="!isHrPositionMode && isAuth('zhiweidiaodong','同意')&&!isAgreeHidden(scope.row)" @click="tongyixinxiCrossAddOrUpdateHandler(scope.row,'cross','','','[1]','请勿重复操作')" type="success">
 								<span class="icon iconfont icon-xihuan" :style='{"margin":"0 0px","fontSize":"14px","color":"#333","display":"none","height":"40px"}'></span>
 								同意
 							</el-button>
@@ -149,7 +149,7 @@
 				:style='{"padding":"0","margin":"20px 0 0","whiteSpace":"nowrap","color":"#333","display":"flex","width":"100%","fontWeight":"500","justifyContent":"center"}'
 			></el-pagination>
 		</template>
-		<!-- 添加/修改页面  将父组件的search方法传递给子组件-->
+		<!-- 添加/修改页面 -->
 		<add-or-update v-if="addOrUpdateFlag" :parent="this" ref="addOrUpdate"></add-or-update>
 
 		<zhiweishensu-cross-add-or-update v-if="zhiweishensuCrossAddOrUpdateFlag" :parent="this" ref="zhiweishensuCrossaddOrUpdate"></zhiweishensu-cross-add-or-update>
@@ -277,18 +277,51 @@
 				if(!rowKey) {
 					return false;
 				}
-				return !!this.actionButtonsHiddenMap[rowKey];
+				let state = this.actionButtonsHiddenMap[rowKey];
+				if(state === true) {
+					return true;
+				}
+				return !!(state && (state.agreeConfirmed || state.appealSubmitted));
+			},
+			getActionButtonState(row) {
+				let rowKey = this.getActionButtonsRowKey(row);
+				if(!rowKey) {
+					return {};
+				}
+				let state = this.actionButtonsHiddenMap[rowKey];
+				if(state === true) {
+					return { agreeConfirmed: true, appealSubmitted: true };
+				}
+				return state || {};
+			},
+			isAgreeConfirmed(row) {
+				return !!this.getActionButtonState(row).agreeConfirmed;
+			},
+			isAppealSubmitted(row) {
+				return !!this.getActionButtonState(row).appealSubmitted;
+			},
+			isAgreeHidden(row) {
+				let state = this.getActionButtonState(row);
+				return !!(state.agreeConfirmed || state.appealSubmitted);
 			},
 			hideActionButtons(row) {
 				let rowKey = this.getActionButtonsRowKey(row);
 				if(!rowKey) {
 					return;
 				}
-				this.$set(this.actionButtonsHiddenMap, rowKey, true);
+				this.$set(this.actionButtonsHiddenMap, rowKey, { agreeConfirmed: true, appealSubmitted: true });
+				this.saveActionButtonsHiddenMap();
+			},
+			markAppealSubmitted(row) {
+				let rowKey = this.getActionButtonsRowKey(row);
+				if(!rowKey) {
+					return;
+				}
+				this.$set(this.actionButtonsHiddenMap, rowKey, { agreeConfirmed: false, appealSubmitted: true });
 				this.saveActionButtonsHiddenMap();
 			},
 			zhiweishensuCrossAddOrUpdateHandler(row,type,crossOptAudit,crossOptPay,statusColumnName,tips,statusColumnValue){
-				this.hideActionButtons(row);
+				this._pendingAppealRow = row;
 				this.showFlag = false;
 				this.addOrUpdateFlag = false;
 				this.zhiweishensuCrossAddOrUpdateFlag = true;
@@ -320,8 +353,7 @@
 				});
 			},
 			tongyixinxiCrossAddOrUpdateHandler(row,type,crossOptAudit,crossOptPay,statusColumnName,tips,statusColumnValue){
-				this.hideActionButtons(row);
-				this.$confirm('是否确认该岗位变动？','提示').then(async()=>{
+				this.$confirm('是否确认同意本次职位调动？','提示').then(async()=>{
 					let data = {
 						gonghao: row.gonghao,
 						xingming: row.xingming,
@@ -332,21 +364,9 @@
 						crossrefid: row.id
 					}
 					await this.$http.post('tongyixinxi/add', data).then(async res=>{
-						await this.$http.post('updateColumn/yuangong/1',{
-							csuUpdateColumn: 'zhiwei',
-							csuUpdateColumnValue: row.xianzhiwei,
-							csuConditionColumn: 'gonghao',
-							csuConditionColumnValue: row.gonghao
-						}).then(rs=>{})
-						await this.$http.post('updateColumn/zhiweidiaodong/1',{
-							csuUpdateColumn: 'zhuangtai',
-							csuUpdateColumnValue: '已同意',
-							csuConditionColumn: 'id',
-							csuConditionColumnValue: row.id
-						}).then(rs=>{
-							this.$message.success('操作成功')
-							this.getDataList()
-						})
+						this.hideActionButtons(row);
+						this.$message.success('操作成功')
+						this.getDataList()
 					})
 				}).catch(()=>{})
 			},
@@ -385,7 +405,7 @@
 				});
 			},
 
-			// 获取数据列表
+			// 鑾峰彇鏁版嵁鍒楄〃
 			getDataList() {
 				this.dataListLoading = true;
 				let params = {
@@ -410,8 +430,8 @@
 					params: params
 				}).then(({ data }) => {
 					if (data && data.code === 0) {
-						this.dataList = data.data.list;
-						this.totalPage = data.data.total;
+						this.dataList = (data.data && data.data.list) || [];
+						this.totalPage = (data.data && data.data.total) || 0;
 					} else {
 						this.dataList = [];
 						this.totalPage = 0;
@@ -419,22 +439,22 @@
 					this.dataListLoading = false;
 				});
 			},
-			// 每页数
+			// 姣忛〉鏁?
 			sizeChangeHandle(val) {
 				this.pageSize = val;
 				this.pageIndex = 1;
 				this.getDataList();
 			},
-			// 当前页
+			// 褰撳墠椤?
 			currentChangeHandle(val) {
 				this.pageIndex = val;
 				this.getDataList();
 			},
-			// 多选
+			// 澶氶€?
 			selectionChangeHandler(val) {
 				this.dataListSelections = val;
 			},
-			// 添加/修改
+			// 娣诲姞/淇敼
 			addOrUpdateHandler(id,type) {
 				this.showFlag = false;
 				this.addOrUpdateFlag = true;
@@ -446,14 +466,14 @@
 					this.$refs.addOrUpdate.init(id,type );
 				});
 			},
-			// 删除
+			// 鍒犻櫎
 			async deleteHandler(id ) {
 				var ids = id? [Number(id)]: this.dataListSelections.map(item => {
 					return Number(item.id);
 				});
-				await this.$confirm(`确定进行[${id ? "删除" : "批量删除"}]操作?`, "提示", {
-					confirmButtonText: "确定",
-					cancelButtonText: "取消",
+				await this.$confirm(`纭畾杩涜[${id ? "鍒犻櫎" : "鎵归噺鍒犻櫎"}]鎿嶄綔?`, "鎻愮ず", {
+					confirmButtonText: "纭畾",
+					cancelButtonText: "鍙栨秷",
 					type: "warning"
 				}).then(async () => {
 					await this.$http({
@@ -463,7 +483,7 @@
 					}).then(async ({ data }) => {
 						if (data && data.code === 0) {
 							this.$message({
-								message: "操作成功",
+								message: "鎿嶄綔鎴愬姛",
 								type: "success",
 								duration: 1500,
 								onClose: () => {
@@ -1169,3 +1189,4 @@
 		background: #fff;
 	}
 </style>
+

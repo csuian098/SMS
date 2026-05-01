@@ -193,6 +193,7 @@
 					xingming: [
 					],
 					qingjialeixing: [
+						{ required: true, message: '请假类型不能为空', trigger: 'change' },
 					],
 					qingjiashijian: [
 					],
@@ -202,6 +203,7 @@
 						{ validator: validateIntNumber, trigger: 'blur' },
 					],
 					qingjiayuanyin: [
+						{ required: true, message: '请假原因不能为空', trigger: 'blur' },
 					],
 					guanlixingming: [
 					],

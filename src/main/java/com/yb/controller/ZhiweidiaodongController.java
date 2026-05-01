@@ -26,8 +26,10 @@ import com.yb.annotation.SysLog;
 
 import com.yb.entity.ZhiweidiaodongEntity;
 import com.yb.entity.view.ZhiweidiaodongView;
+import com.yb.entity.YuangongEntity;
 
 import com.yb.service.ZhiweidiaodongService;
+import com.yb.service.YuangongService;
 import com.yb.utils.PageUtils;
 import com.yb.utils.R;
 import com.yb.utils.EncryptUtil;
@@ -37,8 +39,8 @@ import com.yb.utils.CommonUtil;
 import java.io.IOException;
 
 /**
- * 职位调动
- * 后端接口
+ * 鑱屼綅璋冨姩
+ * 鍚庣鎺ュ彛
  * @author 
  * @email 
  * @date 2026-01-30 23:21:48
@@ -49,6 +51,9 @@ public class ZhiweidiaodongController {
     @Autowired
     private ZhiweidiaodongService zhiweidiaodongService;
 
+    @Autowired
+    private YuangongService yuangongService;
+
 
 
 
@@ -59,7 +64,7 @@ public class ZhiweidiaodongController {
 
 
     /**
-     * 后台列表
+     * 鍚庡彴鍒楄〃
      */
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,ZhiweidiaodongEntity zhiweidiaodong,
@@ -68,21 +73,21 @@ public class ZhiweidiaodongController {
 		if(tableName.equals("yuangong")) {
 			zhiweidiaodong.setGonghao((String)request.getSession().getAttribute("username"));
 		}
-        //设置查询条件
+        //璁剧疆鏌ヨ鏉′欢
         QueryWrapper<ZhiweidiaodongEntity> ew = new QueryWrapper<ZhiweidiaodongEntity>();
 
 
-        //查询结果
+        //鏌ヨ缁撴灉
 		PageUtils page = zhiweidiaodongService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zhiweidiaodong), params), params));
         Map<String, String> deSens = new HashMap<>();
-        //给需要脱敏的字段脱敏
+        //缁欓渶瑕佽劚鏁忕殑瀛楁鑴辨晱
         DeSensUtil.desensitize(page,deSens);
         return R.ok().put("data", page);
     }
 
 
     /**
-     * 前台列表
+     * 鍓嶅彴鍒楄〃
      */
 	@IgnoreAuth
     @RequestMapping("/list")
@@ -90,15 +95,15 @@ public class ZhiweidiaodongController {
                 @RequestParam(required = false) @DateTimeFormat(pattern="yyyy-MM-dd") Date biandongriqistart,
                 @RequestParam(required = false) @DateTimeFormat(pattern="yyyy-MM-dd") Date biandongriqiend,
 		HttpServletRequest request){
-        //设置查询条件
+        //璁剧疆鏌ヨ鏉′欢
         QueryWrapper<ZhiweidiaodongEntity> ew = new QueryWrapper<ZhiweidiaodongEntity>();
         if(biandongriqistart!=null) ew.ge("biandongriqi", biandongriqistart);
         if(biandongriqiend!=null) ew.le("biandongriqi", biandongriqiend);
 
-        //查询结果
+        //鏌ヨ缁撴灉
 		PageUtils page = zhiweidiaodongService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zhiweidiaodong), params), params));
         Map<String, String> deSens = new HashMap<>();
-        //给需要脱敏的字段脱敏
+        //缁欓渶瑕佽劚鏁忕殑瀛楁鑴辨晱
         DeSensUtil.desensitize(page,deSens);
         return R.ok().put("data", page);
     }
@@ -107,7 +112,7 @@ public class ZhiweidiaodongController {
 
 
 	/**
-     * 列表
+     * 鍒楄〃
      */
     @RequestMapping("/lists")
     public R list( ZhiweidiaodongEntity zhiweidiaodong){
@@ -117,37 +122,37 @@ public class ZhiweidiaodongController {
     }
 
 	 /**
-     * 查询
+     * 鏌ヨ
      */
     @RequestMapping("/query")
     public R query(ZhiweidiaodongEntity zhiweidiaodong){
         QueryWrapper< ZhiweidiaodongEntity> ew = new QueryWrapper< ZhiweidiaodongEntity>();
  		ew.allEq(MPUtil.allEQMapPre( zhiweidiaodong, "zhiweidiaodong"));
 		ZhiweidiaodongView zhiweidiaodongView =  zhiweidiaodongService.selectView(ew);
-		return R.ok("查询职位调动成功").put("data", zhiweidiaodongView);
+		return R.ok("鏌ヨ鑱屼綅璋冨姩鎴愬姛").put("data", zhiweidiaodongView);
     }
 
     /**
-     * 后台详情
+     * 鍚庡彴璇︽儏
      */
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
         ZhiweidiaodongEntity zhiweidiaodong = zhiweidiaodongService.getById(id);
         Map<String, String> deSens = new HashMap<>();
-        //给需要脱敏的字段脱敏
+        //缁欓渶瑕佽劚鏁忕殑瀛楁鑴辨晱
         DeSensUtil.desensitize(zhiweidiaodong,deSens);
         return R.ok().put("data", zhiweidiaodong);
     }
 
     /**
-     * 前台详情
+     * 鍓嶅彴璇︽儏
      */
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
         ZhiweidiaodongEntity zhiweidiaodong = zhiweidiaodongService.getById(id);
         Map<String, String> deSens = new HashMap<>();
-        //给需要脱敏的字段脱敏
+        //缁欓渶瑕佽劚鏁忕殑瀛楁鑴辨晱
         DeSensUtil.desensitize(zhiweidiaodong,deSens);
         return R.ok().put("data", zhiweidiaodong);
     }
@@ -156,24 +161,26 @@ public class ZhiweidiaodongController {
 
 
     /**
-     * 后台保存
+     * 鍚庡彴淇濆瓨
      */
     @RequestMapping("/save")
-    @SysLog("新增职位调动")
+    @SysLog("鏂板鑱屼綅璋冨姩")
     public R save(@RequestBody ZhiweidiaodongEntity zhiweidiaodong, HttpServletRequest request){
         //ValidatorUtils.validateEntity(zhiweidiaodong);
         zhiweidiaodongService.save(zhiweidiaodong);
+        applyEmployeePositionChange(zhiweidiaodong);
         return R.ok().put("data",zhiweidiaodong.getId());
     }
 
     /**
-     * 前台保存
+     * 鍓嶅彴淇濆瓨
      */
-    @SysLog("新增职位调动")
+    @SysLog("鏂板鑱屼綅璋冨姩")
     @RequestMapping("/add")
     public R add(@RequestBody ZhiweidiaodongEntity zhiweidiaodong, HttpServletRequest request){
         //ValidatorUtils.validateEntity(zhiweidiaodong);
         zhiweidiaodongService.save(zhiweidiaodong);
+        applyEmployeePositionChange(zhiweidiaodong);
         return R.ok().put("data",zhiweidiaodong.getId());
     }
 
@@ -182,15 +189,16 @@ public class ZhiweidiaodongController {
 
 
     /**
-     * 修改
+     * 淇敼
      */
     @RequestMapping("/update")
     @Transactional
-    @SysLog("修改职位调动")
+    @SysLog("淇敼鑱屼綅璋冨姩")
     public R update(@RequestBody ZhiweidiaodongEntity zhiweidiaodong, HttpServletRequest request){
         //ValidatorUtils.validateEntity(zhiweidiaodong);
-        //全部更新
+        //鍏ㄩ儴鏇存柊
         zhiweidiaodongService.updateById(zhiweidiaodong);
+        applyEmployeePositionChange(zhiweidiaodong);
         return R.ok();
     }
 
@@ -199,10 +207,10 @@ public class ZhiweidiaodongController {
 
 
     /**
-     * 删除
+     * 鍒犻櫎
      */
     @RequestMapping("/delete")
-    @SysLog("删除职位调动")
+    @SysLog("鍒犻櫎鑱屼綅璋冨姩")
     public R delete(@RequestBody Long[] ids){
         zhiweidiaodongService.removeBatchByIds(Arrays.asList(ids));
         return R.ok();
@@ -212,9 +220,28 @@ public class ZhiweidiaodongController {
 
 
 
-    // hasAlipay:否
+    // hasAlipay:鍚?
+
+    private void applyEmployeePositionChange(ZhiweidiaodongEntity zhiweidiaodong) {
+        if (zhiweidiaodong == null
+                || StringUtils.isBlank(zhiweidiaodong.getGonghao())
+                || StringUtils.isBlank(zhiweidiaodong.getXianzhiwei())) {
+            return;
+        }
+        YuangongEntity yuangong = yuangongService.getOne(
+                new QueryWrapper<YuangongEntity>().eq("gonghao", zhiweidiaodong.getGonghao()),
+                false
+        );
+        if (yuangong == null) {
+            return;
+        }
+        yuangong.setZhiwei(zhiweidiaodong.getXianzhiwei());
+        yuangongService.updateById(yuangong);
+    }
 
 
 
 
 }
+
+

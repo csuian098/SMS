@@ -4,9 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yb.annotation.IgnoreAuth;
 import com.yb.annotation.SysLog;
 import com.yb.entity.YuangongxinziEntity;
+import com.yb.entity.YuangongEntity;
+import com.yb.entity.ZhiweidiaodongEntity;
 import com.yb.entity.ZhiweishensuEntity;
 import com.yb.entity.view.ZhiweishensuView;
+import com.yb.service.YuangongService;
 import com.yb.service.YuangongxinziService;
+import com.yb.service.ZhiweidiaodongService;
 import com.yb.service.ZhiweishensuService;
 import com.yb.utils.DeSensUtil;
 import com.yb.utils.MPUtil;
@@ -31,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 职位申诉
+ * 鑱屼綅鐢宠瘔
  */
 @RestController
 @RequestMapping("/zhiweishensu")
@@ -41,6 +45,12 @@ public class ZhiweishensuController {
 
     @Autowired
     private YuangongxinziService yuangongxinziService;
+
+    @Autowired
+    private YuangongService yuangongService;
+
+    @Autowired
+    private ZhiweidiaodongService zhiweidiaodongService;
 
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params, ZhiweishensuEntity zhiweishensu, HttpServletRequest request) {
@@ -90,7 +100,7 @@ public class ZhiweishensuController {
         QueryWrapper<ZhiweishensuEntity> ew = new QueryWrapper<>();
         ew.allEq(MPUtil.allEQMapPre(zhiweishensu, "zhiweishensu"));
         ZhiweishensuView zhiweishensuView = zhiweishensuService.selectView(ew);
-        return R.ok("查询成功").put("data", zhiweishensuView);
+        return R.ok("鏌ヨ鎴愬姛").put("data", zhiweishensuView);
     }
 
     @RequestMapping("/info/{id}")
@@ -109,14 +119,14 @@ public class ZhiweishensuController {
     }
 
     @RequestMapping("/save")
-    @SysLog("新增职位申诉")
+    @SysLog("鏂板鑱屼綅鐢宠瘔")
     public R save(@RequestBody ZhiweishensuEntity zhiweishensu, HttpServletRequest request) {
         zhiweishensuService.save(zhiweishensu);
         return R.ok().put("data", zhiweishensu.getId());
     }
 
     @RequestMapping("/add")
-    @SysLog("新增职位申诉")
+    @SysLog("鏂板鑱屼綅鐢宠瘔")
     public R add(@RequestBody ZhiweishensuEntity zhiweishensu, HttpServletRequest request) {
         zhiweishensuService.save(zhiweishensu);
         return R.ok().put("data", zhiweishensu.getId());
@@ -124,7 +134,7 @@ public class ZhiweishensuController {
 
     @RequestMapping("/update")
     @Transactional
-    @SysLog("修改职位申诉")
+    @SysLog("淇敼鑱屼綅鐢宠瘔")
     public R update(@RequestBody ZhiweishensuEntity zhiweishensu, HttpServletRequest request) {
         zhiweishensuService.updateById(zhiweishensu);
         return R.ok();
@@ -132,7 +142,7 @@ public class ZhiweishensuController {
 
     @RequestMapping("/shBatch")
     @Transactional
-    @SysLog("审核职位申诉")
+    @SysLog("瀹℃牳鑱屼綅鐢宠瘔")
     public R update(@RequestBody Long[] ids,
                     @RequestParam String sfsh,
                     @RequestParam(required = false, defaultValue = "") String shhf) {
@@ -146,8 +156,8 @@ public class ZhiweishensuController {
             }
 
             boolean isSalaryAppeal = "salary_appeal".equals(zhiweishensu.getShhf())
-                    || StringUtils.contains(StringUtils.defaultString(zhiweishensu.getShensuyuanyin()), "工资")
-                    || StringUtils.contains(StringUtils.defaultString(zhiweishensu.getShensuyuanyin()), "薪资");
+                    || StringUtils.contains(StringUtils.defaultString(zhiweishensu.getShensuyuanyin()), "宸ヨ祫")
+                    || StringUtils.contains(StringUtils.defaultString(zhiweishensu.getShensuyuanyin()), "钖祫");
 
             YuangongxinziEntity salary = null;
             if (zhiweishensu.getCrossrefid() != null) {
@@ -167,17 +177,21 @@ public class ZhiweishensuController {
                 if (StringUtils.isNotBlank(zhiweishensu.getGuanlizhanghao())) {
                     fallback.eq("guanlizhanghao", zhiweishensu.getGuanlizhanghao());
                 }
-                fallback.eq("ispay", "申诉锁定")
+                fallback.eq("ispay", "鐢宠瘔閿佸畾")
                         .orderByDesc("dengjiriqi")
                         .orderByDesc("id")
                         .last("limit 1");
                 salary = yuangongxinziService.getOne(fallback, false);
             }
 
-            if (salary != null && (isSalaryAppeal || "申诉锁定".equals(salary.getIspay()))) {
+            if (salary != null && (isSalaryAppeal || "鐢宠瘔閿佸畾".equals(salary.getIspay()))) {
                 salary.setSfsh("待审核");
                 salary.setIspay("未支付");
                 resetSalaryMap.put(salary.getId(), salary);
+            }
+
+            if (!isSalaryAppeal && isApproved(sfsh) && zhiweishensu.getCrossrefid() != null) {
+                restoreOriginalPosition(zhiweishensu);
             }
 
             zhiweishensu.setSfsh(sfsh);
@@ -195,10 +209,31 @@ public class ZhiweishensuController {
         return R.ok();
     }
 
+    private boolean isApproved(String sfsh) {
+        return "是".equals(sfsh) || "鏄?".equals(sfsh);
+    }
+
+    private void restoreOriginalPosition(ZhiweishensuEntity zhiweishensu) {
+        ZhiweidiaodongEntity diaodong = zhiweidiaodongService.getById(zhiweishensu.getCrossrefid());
+        if (diaodong == null || StringUtils.isBlank(diaodong.getGonghao()) || StringUtils.isBlank(diaodong.getZhiwei())) {
+            return;
+        }
+        YuangongEntity yuangong = yuangongService.getOne(
+                new QueryWrapper<YuangongEntity>().eq("gonghao", diaodong.getGonghao()),
+                false
+        );
+        if (yuangong == null) {
+            return;
+        }
+        yuangong.setZhiwei(diaodong.getZhiwei());
+        yuangongService.updateById(yuangong);
+    }
+
     @RequestMapping("/delete")
-    @SysLog("删除职位申诉")
+    @SysLog("鍒犻櫎鑱屼綅鐢宠瘔")
     public R delete(@RequestBody Long[] ids) {
         zhiweishensuService.removeBatchByIds(Arrays.asList(ids));
         return R.ok();
     }
 }
+
