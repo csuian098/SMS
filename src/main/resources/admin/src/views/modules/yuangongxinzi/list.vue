@@ -407,7 +407,7 @@
 				this.getDataList()
 			},
 			canModifySalary(row) {
-				if (!row || (row.sfsh && row.sfsh !== '待审核')) {
+				if (!row || (row.sfsh && row.sfsh !== '待审核' && row.sfsh !== '否')) {
 					return false;
 				}
 				return this.isAuth('yuangongxinzi','修改') || this.tablename === 'renshiguanliyuan';

@@ -62,10 +62,10 @@
 				</div>
 
 				<el-row v-if="tablename=='yuangong'" class="sign-actions-row" :style='{"width":"100%","margin":"16px 0 0","padding":"0","display":"flex","gap":"12px"}'>
-					<el-button type="primary" class="sign-btn" :disabled="!canQuickSign('签到')" @click="quickSign('签到')">1 签到</el-button>
-					<el-button type="primary" class="sign-btn" :disabled="!canQuickSign('签退')" @click="quickSign('签退')">2 签退</el-button>
-					<el-button type="primary" class="sign-btn" :disabled="!canQuickSign('加班开始')" @click="quickSign('加班开始')">3 加班开始</el-button>
-					<el-button type="primary" class="sign-btn" :disabled="!canQuickSign('加班结束')" @click="quickSign('加班结束')">4 加班结束</el-button>
+					<el-button type="primary" class="sign-btn" :disabled="!canQuickSign('签到')" @click="quickSign('签到')">签到</el-button>
+					<el-button type="primary" class="sign-btn" :disabled="!canQuickSign('签退')" @click="quickSign('签退')">签退</el-button>
+					<el-button type="primary" class="sign-btn" :disabled="!canQuickSign('加班开始')" @click="quickSign('加班开始')">加班开始</el-button>
+					<el-button type="primary" class="sign-btn" :disabled="!canQuickSign('加班结束')" @click="quickSign('加班结束')">加班结束</el-button>
 				</el-row>
 			</el-form>
 			<div :style='{"border":"1px solid #e9eafc","width":"100%","padding":" 0px 15px 20px","boxShadow":"none","borderRadius":"10px","background":"#fff"}'>
