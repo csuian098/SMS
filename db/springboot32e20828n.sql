@@ -70,8 +70,8 @@ CREATE TABLE `jixiaokaohe` (
   `gongzuojixiao` int(11) DEFAULT NULL COMMENT '工作绩效',
   `zongdefen` int(11) DEFAULT NULL COMMENT '总得分',
   `dengjiriqi` date DEFAULT NULL COMMENT '登记日期',
-  `guanlizhanghao` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理账号',
-  `guanlixingming` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
+  `guanlizhanghao` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理账号',
+  `guanlixingming` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=481 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='绩效考核';
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -123,14 +123,14 @@ CREATE TABLE `qingjiashenqing` (
   `addtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `gonghao` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '工号',
   `xingming` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '姓名',
-  `qingjialeixing` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请假类型',
+  `qingjialeixing` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请假类型',
   `qingjiashijian` datetime DEFAULT NULL COMMENT '请假时间',
   `jieshushijian` datetime DEFAULT NULL COMMENT '结束时间',
   `qingjiatianshu` int(11) DEFAULT NULL COMMENT '请假天数',
   `qingjiayuanyin` longtext COLLATE utf8mb4_unicode_ci COMMENT '请假原因',
-  `guanlixingming` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
-  `guanlizhanghao` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '管理账号',
-  `sfsh` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT '待审核' COMMENT '是否审核',
+  `guanlixingming` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
+  `guanlizhanghao` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '管理账号',
+  `sfsh` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '待审核' COMMENT '是否审核',
   `shhf` longtext COLLATE utf8mb4_unicode_ci COMMENT '审核回复',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=481 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='请假申请';
@@ -159,9 +159,9 @@ CREATE TABLE `renshiguanliyuan` (
   `guanlizhanghao` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '管理账号',
   `mima` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
   `guanlixingming` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '管理姓名',
-  `xingbie` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '性别',
-  `lianxidianhua` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '联系电话',
-  `shenfenzheng` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身份证',
+  `xingbie` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '性别',
+  `lianxidianhua` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '联系电话',
+  `shenfenzheng` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身份证',
   `touxiang` longtext COLLATE utf8mb4_unicode_ci COMMENT '头像',
   PRIMARY KEY (`id`),
   UNIQUE KEY `guanlizhanghao` (`guanlizhanghao`)
@@ -188,7 +188,7 @@ DROP TABLE IF EXISTS `syslog`;
 CREATE TABLE `syslog` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
   `addtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `username` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
+  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
   `operation` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户操作',
   `method` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求方法',
   `params` longtext COLLATE utf8mb4_unicode_ci COMMENT '请求参数',
@@ -249,8 +249,8 @@ CREATE TABLE `tongyixinxi` (
   `gonghao` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '工号',
   `xingming` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '姓名',
   `tongyishijian` datetime DEFAULT NULL COMMENT '同意时间',
-  `guanlizhanghao` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理账号',
-  `guanlixingming` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
+  `guanlizhanghao` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理账号',
+  `guanlixingming` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
   `crossuserid` bigint(20) DEFAULT NULL COMMENT '跨表用户id',
   `crossrefid` bigint(20) DEFAULT NULL COMMENT '跨表主键id',
   PRIMARY KEY (`id`)
@@ -277,9 +277,9 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
   `addtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `username` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
+  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
   `password` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
-  `role` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT '管理员' COMMENT '角色',
+  `role` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '管理员' COMMENT '角色',
   `image` longtext COLLATE utf8mb4_unicode_ci COMMENT '头像',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员';
@@ -308,12 +308,12 @@ CREATE TABLE `yuangong` (
   `gonghao` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '工号',
   `mima` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
   `xingming` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '姓名',
-  `xingbie` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '性别',
-  `shouji` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '手机',
-  `shenfenzheng` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身份证',
+  `xingbie` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '性别',
+  `shouji` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '手机',
+  `shenfenzheng` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身份证',
   `touxiang` longtext COLLATE utf8mb4_unicode_ci COMMENT '头像',
   `qingjiatianshu` double DEFAULT NULL COMMENT '请假天数',
-  `zhiwei` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '职位',
+  `zhiwei` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '职位',
   PRIMARY KEY (`id`),
   UNIQUE KEY `gonghao` (`gonghao`)
 ) ENGINE=InnoDB AUTO_INCREMENT=131 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='员工';
@@ -351,8 +351,8 @@ CREATE TABLE `yuangongkaoqin` (
   `kuanggongcishu` int(11) DEFAULT NULL COMMENT '旷工次数',
   `dengjiriqi` date DEFAULT NULL COMMENT '登记日期',
   `beizhu` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
-  `guanlizhanghao` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理账号',
-  `guanlixingming` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
+  `guanlizhanghao` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理账号',
+  `guanlixingming` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
   PRIMARY KEY (`id`),
   UNIQUE KEY `dengjibianhao` (`dengjibianhao`)
 ) ENGINE=InnoDB AUTO_INCREMENT=481 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='员工考勤';
@@ -417,13 +417,13 @@ CREATE TABLE `yuangongxinzi` (
   `koukuanjine` double DEFAULT NULL COMMENT '扣款金额',
   `jiaqikouxin` double DEFAULT NULL COMMENT '假期扣薪',
   `shifagongzi` double DEFAULT NULL COMMENT '实发工资',
-  `koukuanyuanyin` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '扣款原因',
+  `koukuanyuanyin` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '扣款原因',
   `dengjiriqi` date DEFAULT NULL COMMENT '登记日期',
-  `guanlizhanghao` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理账号',
-  `guanlixingming` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
-  `sfsh` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT '待审核' COMMENT '是否审核',
+  `guanlizhanghao` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理账号',
+  `guanlixingming` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
+  `sfsh` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '待审核' COMMENT '是否审核',
   `shhf` longtext COLLATE utf8mb4_unicode_ci COMMENT '审核回复',
-  `ispay` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT '未支付' COMMENT '是否支付',
+  `ispay` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '未支付' COMMENT '是否支付',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=361 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='员工薪资';
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -450,12 +450,12 @@ CREATE TABLE `zhiweidiaodong` (
   `addtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `xingming` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '姓名',
   `gonghao` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '工号',
-  `zhiwei` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '原职位',
-  `xianzhiwei` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '现职位',
+  `zhiwei` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '原职位',
+  `xianzhiwei` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '现职位',
   `biandongyuanyin` longtext COLLATE utf8mb4_unicode_ci COMMENT '变动原因',
   `biandongriqi` date DEFAULT NULL COMMENT '变动日期',
-  `guanlizhanghao` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理账号',
-  `guanlixingming` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
+  `guanlizhanghao` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理账号',
+  `guanlixingming` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='职位调动';
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -484,11 +484,11 @@ CREATE TABLE `zhiweishensu` (
   `xingming` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '姓名',
   `shensuyuanyin` longtext COLLATE utf8mb4_unicode_ci COMMENT '申诉原因',
   `shensuriqi` date DEFAULT NULL COMMENT '申诉日期',
-  `guanlizhanghao` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理账号',
-  `guanlixingming` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
+  `guanlizhanghao` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理账号',
+  `guanlixingming` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '管理姓名',
   `crossuserid` bigint(20) DEFAULT NULL COMMENT '跨表用户id',
   `crossrefid` bigint(20) DEFAULT NULL COMMENT '跨表主键id',
-  `sfsh` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT '待审核' COMMENT '是否审核',
+  `sfsh` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '待审核' COMMENT '是否审核',
   `shhf` longtext COLLATE utf8mb4_unicode_ci COMMENT '审核回复',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='职位申诉';

@@ -57,7 +57,7 @@
 					<el-input v-model="ruleForm.xingming" placeholder="姓名" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-if="type!='info'"  label="工号" prop="gonghao" >
-					<el-input v-model="ruleForm.gonghao" placeholder="工号" clearable  :readonly="ro.gonghao"></el-input>
+					<el-input v-model="ruleForm.gonghao" placeholder="工号" clearable  :readonly="ro.gonghao" @blur="gonghaoChange" @clear="clearYuangongLinkage"></el-input>
 				</el-form-item>
 				<el-form-item v-else class="input" label="工号" prop="gonghao" >
 					<el-input v-model="ruleForm.gonghao" placeholder="工号" readonly></el-input>
@@ -537,7 +537,7 @@
 			// 下二随
 			xingmingChange () {
 				this.$http({
-					url: `follow/yuangong/xingming?columnValue=`+ this.ruleForm.xingming,
+					url: `follow/yuangong/xingming?columnValue=`+ encodeURIComponent(this.ruleForm.xingming),
 					method: "get"
 				}).then(async ({ data }) => {
 					if (data && data.code === 0) {
@@ -552,6 +552,35 @@
 						this.$message.error(data.msg);
 					}
 				});
+			},
+			gonghaoChange () {
+				if (!this.ruleForm.gonghao) {
+					this.clearYuangongLinkage()
+					return
+				}
+				this.ruleForm.gonghao = String(this.ruleForm.gonghao).trim()
+				this.$http({
+					url: `follow/yuangong/gonghao?columnValue=`+ encodeURIComponent(this.ruleForm.gonghao),
+					method: "get"
+				}).then(async ({ data }) => {
+					if (data && data.code === 0 && data.data) {
+						if(data.data.xingming){
+							this.ruleForm.xingming = data.data.xingming
+						}
+						this.jiabanshichangTotal = Number(data.data.jiabanshichang) || 0
+						this.yuangongBaseJiabancishu = Number(data.data.jiabantianshu || data.data.jiabancishu) || 0
+						this.yuangongBaseQingjiatianshu = Number(data.data.qingjiatianshu) || 0
+						await this.syncKaoqinAndQingjiaData()
+					} else {
+						this.ruleForm.xingming = ''
+						this.$message.error((data && data.msg) ? data.msg : '未找到该工号对应的员工')
+					}
+				});
+			},
+			clearYuangongLinkage () {
+				this.ruleForm.xingming = ''
+				this.ruleForm.gonghao = ''
+				this.syncKaoqinAndQingjiaData()
 			},
 			// 多级联动参数
 

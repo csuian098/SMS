@@ -70,7 +70,7 @@
 					:data="dataList"
 					v-loading="dataListLoading"
 					@selection-change="selectionChangeHandler">
-					<el-table-column :resizable='true' type="selection" align="center" width="50"></el-table-column>
+					<el-table-column :resizable='true' type="selection" align="center" width="50" :selectable="salarySelectionSelectable"></el-table-column>
 					<el-table-column :resizable='true' :sortable='true' label="序号" type="index" width="50" />
 					<el-table-column :resizable='true' :sortable='true'
 												prop="xingming"
@@ -192,23 +192,23 @@
 								<span class="icon iconfont icon-chakan2" :style='{"margin":"0 0px","fontSize":"14px","color":"#333","display":"none","height":"40px"}'></span>
 								详情
 							</el-button>
-							<el-button class="edit" v-if="canModifySalary(scope.row)" type="success" @click="addOrUpdateHandler(scope.row.id)">
+							<el-button class="edit" v-if="!isSalaryAgreed(scope.row) && canModifySalary(scope.row)" type="success" @click="addOrUpdateHandler(scope.row.id)">
 								<span class="icon iconfont icon-xiugai13" :style='{"margin":"0 0px","fontSize":"14px","color":"rgba(255, 140, 0, 1)","display":"none","height":"40px"}'></span>
 								修改
 							</el-button>
-							<el-button class="btn8" v-if="['人事管理员'].includes(role) && isAuth('yuangongxinzi','支付')" :disabled="isPayLocked(scope.row)" type="success" @click="payBatchDialog(scope.row)">
+							<el-button class="btn8" v-if="!isSalaryAgreed(scope.row) && ['人事管理员'].includes(role) && isAuth('yuangongxinzi','支付')" :disabled="isPayLocked(scope.row)" type="success" @click="payBatchDialog(scope.row)">
 								<span class="icon iconfont icon-zhuanfa13" :style='{"margin":"0 0px","fontSize":"14px","color":"#db9663","display":"none","height":"40px"}'></span>
 								支付
 							</el-button>
-							<el-button class="btn8" v-if="tablename=='yuangong'" @click="zhiweishensuCrossAddOrUpdateHandler(scope.row,'cross','','')" type="success">
+							<el-button class="btn8" v-if="tablename=='yuangong' && !isSalaryAgreed(scope.row)" @click="zhiweishensuCrossAddOrUpdateHandler(scope.row,'cross','','')" type="success">
 								<span class="icon iconfont icon-zhuanfa13" :style='{"margin":"0 0px","fontSize":"14px","color":"#db9663","display":"none","height":"40px"}'></span>
 								申诉
 							</el-button>
-							<el-button class="btn8" v-if="tablename=='yuangong'" @click="salaryTongyiHandler(scope.row)" type="success">
+							<el-button class="btn8" v-if="tablename=='yuangong' && !isSalaryAgreed(scope.row)" @click="salaryTongyiHandler(scope.row)" type="success">
 								<span class="icon iconfont icon-zhuanfa13" :style='{"margin":"0 0px","fontSize":"14px","color":"#db9663","display":"none","height":"40px"}'></span>
 								同意
 							</el-button>
-							<el-button class="del" v-if="isAuth('yuangongxinzi','删除')" type="primary" @click="deleteHandler(scope.row.id)">
+							<el-button class="del" v-if="!isSalaryAgreed(scope.row) && isAuth('yuangongxinzi','删除')" type="primary" @click="deleteHandler(scope.row.id)">
 								<span class="icon iconfont icon-shanchu6" :style='{"margin":"0 0px","fontSize":"14px","color":"rgba(220, 38, 38, 1)","display":"none","height":"40px"}'></span>
 								删除
 							</el-button>
@@ -306,6 +306,7 @@
 				totalPage: 0,
 				dataListLoading: false,
 				dataListSelections: [],
+				agreedSalaryIds: [],
 				crossAddOrUpdateFlag: false,
 				sfshBatchVisiable: false,
 				payBatchVisiable: false,
@@ -411,6 +412,41 @@
 					return false;
 				}
 				return this.isAuth('yuangongxinzi','修改') || this.tablename === 'renshiguanliyuan';
+			},
+			isSalaryAgreed(row) {
+				if (this.tablename !== 'yuangong' || !row || !row.id) {
+					return false;
+				}
+				return row._salaryAgreed || this.agreedSalaryIds.indexOf(String(row.id)) >= 0;
+			},
+			salarySelectionSelectable(row) {
+				return !this.isSalaryAgreed(row);
+			},
+			loadAgreedSalaryIds() {
+				if (this.tablename !== 'yuangong') {
+					this.agreedSalaryIds = [];
+					return;
+				}
+				this.$http({
+					url: 'tongyixinxi/page',
+					method: 'get',
+					params: {
+						page: 1,
+						limit: 1000,
+						sort: 'id',
+						order: 'desc',
+						crossuserid: this.$storage.get('userid')
+					}
+				}).then(({ data }) => {
+					if (data && data.code === 0 && data.data) {
+						const ids = (data.data.list || []).map(item => String(item.crossrefid));
+						this.agreedSalaryIds = ids;
+						this.dataList.forEach(row => {
+							this.$set(row, '_salaryAgreed', ids.indexOf(String(row.id)) >= 0);
+						});
+						this.dataListSelections = this.dataListSelections.filter(row => !this.isSalaryAgreed(row));
+					}
+				});
 			},
 			isPayLocked(row) {
 				return !!(row && row.ispay === '申诉锁定');
@@ -593,6 +629,7 @@
 					if (data && data.code === 0) {
 						this.dataList = data.data.list;
 						this.totalPage = data.data.total;
+						this.loadAgreedSalaryIds();
 					} else {
 						this.dataList = [];
 						this.totalPage = 0;
@@ -682,6 +719,11 @@
 				var ids = id ? [Number(id)] : this.dataListSelections.map(item => {
 					return Number(item.id);
 				});
+				const agreedRows = id ? this.dataList.filter(item => Number(item.id) === Number(id) && this.isSalaryAgreed(item)) : this.dataListSelections.filter(item => this.isSalaryAgreed(item));
+				if (agreedRows.length) {
+					this.$message.warning('已同意的薪资记录不能删除');
+					return;
+				}
 				await this.$confirm(`确定进行[${id ? "删除" : "批量删除"}]操作?`, "提示", {
 					confirmButtonText: "确定",
 					cancelButtonText: "取消",
@@ -809,6 +851,8 @@
 						}
 					}).then(({ data }) => {
 						if (data && data.code === 0) {
+							this.agreedSalaryIds.push(String(row.id));
+							this.$set(row, '_salaryAgreed', true);
 							this.$message.success('已同意');
 						} else {
 							this.$message.error(data.msg || '操作失败');

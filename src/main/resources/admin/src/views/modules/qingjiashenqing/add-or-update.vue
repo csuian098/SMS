@@ -111,7 +111,7 @@
 				<el-input
 					style="min-width: 200px; max-width: 600px;"
 					type="textarea"
-					:rows="8"
+					:rows="5"
 					placeholder="请假原因"
 					v-model="ruleForm.qingjiayuanyin" >
 				</el-input>
@@ -205,8 +205,9 @@
 					qingjiayuanyin: [
 						{ required: true, message: '请假原因不能为空', trigger: 'blur' },
 					],
-					guanlixingming: [
-					],
+				guanlixingming: [
+					{ required: true, message: '管理姓名不能为空', trigger: 'change' },
+				],
 					guanlizhanghao: [
 						{ required: true, message: '管理账号不能为空', trigger: 'blur' },
 					],
@@ -466,12 +467,14 @@
 </script>
 <style lang="scss" scoped>
 	.addEdit-block {
-		padding: 30px;
+		padding: 18px 30px;
 	}
 	.add-update-preview {
 		border: 0px solid #ddd;
 		border-radius: 10px;
-		padding: 30px;
+		padding: 24px 30px;
+		margin: 0 auto;
+		max-width: 1280px;
 		box-shadow: none;
 		background: #ffffff;
 		display: flex;
@@ -490,7 +493,7 @@
 		width: auto;
 	}
 	.add-update-preview /deep/ .el-form-item {
-		margin: 0 20px 20px;
+		margin: 0 20px 14px;
 		width: calc(33.33% - 40px);
 	}
 	.add-update-preview .el-form-item /deep/ .el-form-item__label {
@@ -930,7 +933,7 @@
 	}
 	.add-update-preview /deep/ .el-form-item.btn {
 		padding: 0 30px;
-		margin: 20px auto 0;
+		margin: 10px auto 0;
 		display: flex;
 		width: 100%;
 		justify-content: flex-end;

@@ -107,7 +107,7 @@ public class CommonController{
 		params.put("column", columnName);
 		params.put("columnValue", columnValue);
 		Map<String, Object> result = commonService.getFollowByOption(params);
-		if (result != null && "yuangong".equals(tableName) && "xingming".equals(columnName)) {
+		if (result != null && "yuangong".equals(tableName) && ("xingming".equals(columnName) || "gonghao".equals(columnName))) {
 			appendYuangongJiabanshichang(result);
 		}
         Object o = null;

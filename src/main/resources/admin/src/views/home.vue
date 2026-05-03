@@ -30,6 +30,16 @@
 			</div>
 		</div>
 
+		<div class="reminder-box" v-if="reminderCards.length">
+			<div class="reminder-card" v-for="item in reminderCards" :key="item.key" @click="goReminder(item.path)">
+				<div class="reminder-main">
+					<div class="reminder-title">{{ item.title }}</div>
+					<div class="reminder-desc">{{ item.desc }}</div>
+				</div>
+				<div class="reminder-count">{{ item.count }}</div>
+			</div>
+		</div>
+
 		<div class="type4 type4-double">
 			<div class="echarts1 animate__animated" v-if="isHomeVisible('yuangong','首页统计',2)">
 				<div id="yuangongChart1" style="width: 100%;height: 100%"></div>
@@ -75,6 +85,7 @@ export default {
 			xinziStatRows: [],
 			salaryHistogramChartInst: null,
 			salaryTrendChartInst: null,
+			reminderCards: [],
 			line: {"backgroundColor":"transparent","yAxis":{"axisLabel":{"borderType":"solid","rotate":0,"padding":0,"shadowOffsetX":0,"margin":15,"backgroundColor":"transparent","borderColor":"#000","shadowOffsetY":0,"color":"#333","shadowBlur":0,"show":true,"inside":false,"ellipsis":"...","overflow":"none","borderRadius":0,"borderWidth":0,"width":"","fontSize":12,"lineHeight":24,"shadowColor":"transparent","fontWeight":"normal","height":""},"axisTick":{"show":true,"length":5,"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"cap":"butt","color":"#333","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"rgba(0,0,0,.5)"},"inside":false},"splitLine":{"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"cap":"butt","color":"#666","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"rgba(0,0,0,.5)"},"show":true},"minInterval":1,"axisLine":{"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"cap":"butt","color":"#333","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"rgba(0,0,0,.5)"},"show":true},"splitArea":{"show":false,"areaStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"color":"rgba(25,25,25,0.3)","opacity":1,"shadowBlur":10,"shadowColor":"rgba(0,0,0,.5)"}}},"xAxis":{"axisLabel":{"borderType":"solid","rotate":30,"padding":0,"shadowOffsetX":0,"margin":10,"backgroundColor":"transparent","borderColor":"#000","shadowOffsetY":0,"color":"#333","shadowBlur":0,"show":true,"inside":false,"ellipsis":"...","overflow":"truncate","borderRadius":0,"borderWidth":0,"width":120,"interval":0,"fontSize":12,"lineHeight":24,"shadowColor":"transparent","fontWeight":"normal","height":""},"axisTick":{"show":true,"length":5,"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"cap":"butt","color":"#333","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"rgba(0,0,0,.5)"},"inside":false},"splitLine":{"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"cap":"butt","color":"#333","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"rgba(0,0,0,.5)"},"show":false},"axisLine":{"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"cap":"butt","color":"#333","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"rgba(0,0,0,.5)"},"show":true},"splitArea":{"show":false,"areaStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"color":"rgba(25,25,25,.3)","opacity":1,"shadowBlur":10,"shadowColor":"rgba(0,0,0,.5)"}}},"color":["#378bb9","#095dac","#fbc62f","#16606a","#f75d5f","#5967cc","#faa07b","#9ab7a8","#ea7ccc"],"legend":{"padding":0,"itemGap":10,"shadowOffsetX":0,"backgroundColor":"transparent","borderColor":"#666","shadowOffsetY":0,"orient":"horizontal","shadowBlur":0,"bottom":"auto","itemHeight":14,"show":true,"icon":"roundRect","itemStyle":{"borderType":"solid","shadowOffsetX":0,"borderColor":"inherit","shadowOffsetY":0,"color":"inherit","shadowBlur":0,"borderWidth":0,"opacity":1,"shadowColor":"transparent"},"right":"auto","top":"auto","borderRadius":0,"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"color":"inherit","shadowBlur":0,"width":"auto","type":"inherit","opacity":1,"shadowColor":"transparent"},"left":"right","borderWidth":0,"width":"80%","itemWidth":20,"textStyle":{"textBorderWidth":0,"color":"inherit","textShadowColor":"transparent","ellipsis":"...","overflow":"none","fontSize":12,"lineHeight":24,"textShadowOffsetX":0,"textShadowOffsetY":0,"textBorderType":"solid","fontWeight":500,"textBorderColor":"transparent","textShadowBlur":0},"shadowColor":"rgba(0,0,0,.3)","height":"auto"},"series":{"showSymbol":true,"symbol":"pin","symbolSize":18},"tooltip":{"backgroundColor":"#123","textStyle":{"color":"#fff"}},"title":{"borderType":"solid","padding":0,"shadowOffsetX":0,"backgroundColor":"transparent","borderColor":"#666","shadowOffsetY":0,"shadowBlur":0,"bottom":"auto","show":true,"right":"auto","top":"auto","borderRadius":0,"left":"left","borderWidth":0,"textStyle":{"textBorderWidth":0,"color":"#333","textShadowColor":"transparent","fontSize":14,"lineHeight":24,"textShadowOffsetX":0,"textShadowOffsetY":0,"textBorderType":"solid","fontWeight":600,"textBorderColor":"#666","textShadowBlur":0},"shadowColor":"transparent"}},
 			bar: {"backgroundColor":"transparent","yAxis":{"axisLabel":{"borderType":"solid","rotate":0,"padding":0,"shadowOffsetX":0,"margin":12,"backgroundColor":"transparent","borderColor":"#666","shadowOffsetY":0,"color":"#333","shadowBlur":0,"show":true,"inside":false,"ellipsis":"...","overflow":"none","borderRadius":0,"borderWidth":0,"width":"","fontSize":12,"lineHeight":24,"shadowColor":"transparent","fontWeight":"normal","height":""},"axisTick":{"show":true,"length":5,"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"cap":"butt","color":"#333","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"rgba(0,0,0,.5)"},"inside":false},"splitLine":{"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"cap":"butt","color":"#666","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"rgba(0,0,0,.5)"},"show":true},"minInterval":1,"axisLine":{"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"cap":"butt","color":"#333","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"rgba(0,0,0,.5)"},"show":true},"splitArea":{"show":false,"areaStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"color":"rgba(25,25,25,0.3)","opacity":1,"shadowBlur":10,"shadowColor":"rgba(0,0,0,.5)"}}},"xAxis":{"axisLabel":{"borderType":"solid","rotate":30,"padding":0,"shadowOffsetX":0,"margin":10,"backgroundColor":"transparent","borderColor":"#000","shadowOffsetY":0,"color":"#333","shadowBlur":0,"show":true,"inside":false,"ellipsis":"...","overflow":"truncate","borderRadius":0,"borderWidth":0,"width":120,"interval":0,"fontSize":12,"lineHeight":24,"shadowColor":"transparent","fontWeight":"normal","height":""},"axisTick":{"show":true,"length":5,"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"cap":"butt","color":"#333","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"rgba(0,0,0,.5)"},"inside":false},"splitLine":{"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"cap":"butt","color":"#333","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"rgba(0,0,0,.5)"},"show":false},"minInterval":1,"axisLine":{"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"cap":"butt","color":"#333","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"rgba(0,0,0,.5)"},"show":true},"splitArea":{"show":false,"areaStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"color":"rgba(25,25,25,.3)","opacity":1,"shadowBlur":10,"shadowColor":"rgba(0,0,0,.5)"}}},"color":["#378bb9","#095dac","#fbc62f","#16606a","#f75d5f","#5967cc","#faa07b","#9ab7a8","#ea7ccc"],"legend":{"padding":0,"itemGap":10,"shadowOffsetX":0,"backgroundColor":"transparent","borderColor":"#666","shadowOffsetY":0,"orient":"horizontal","shadowBlur":0,"bottom":"auto","itemHeight":14,"show":true,"icon":"roundRect","itemStyle":{"borderType":"solid","shadowOffsetX":0,"borderColor":"inherit","shadowOffsetY":0,"color":"inherit","shadowBlur":0,"borderWidth":0,"opacity":1,"shadowColor":"transparent"},"right":"auto","top":"auto","borderRadius":0,"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"color":"inherit","shadowBlur":0,"width":"auto","type":"inherit","opacity":1,"shadowColor":"transparent"},"left":"right","borderWidth":0,"width":"80%","itemWidth":20,"textStyle":{"textBorderWidth":0,"color":"inherit","textShadowColor":"transparent","ellipsis":"...","overflow":"none","fontSize":12,"lineHeight":12,"textShadowOffsetX":0,"textShadowOffsetY":0,"textBorderType":"solid","fontWeight":500,"textBorderColor":"transparent","textShadowBlur":0},"shadowColor":"rgba(0,0,0,.3)","height":"auto"},"grid":{"x":"25%","y":"15%","y2":"15%","x2":"5%"},"series":{"barWidth":"auto","itemStyle":{"borderType":"solid","shadowOffsetX":0,"borderColor":"#666","shadowOffsetY":0,"color":"","shadowBlur":0,"barBorderRadius":[30,30,30,30],"borderWidth":0,"opacity":1,"shadowColor":"#000"},"colorBy":"data","barCategoryGap":"20%"},"tooltip":{"backgroundColor":"#123","textStyle":{"color":"#fff"}},"title":{"borderType":"solid","padding":0,"shadowOffsetX":0,"backgroundColor":"transparent","borderColor":"#666","shadowOffsetY":0,"subtext":"","shadowBlur":0,"bottom":"auto","show":true,"right":"auto","subtextStyle":{"padding":[5,0,0,0],"borderColor":"red","color":"red","borderWidth":10},"top":"auto","borderRadius":0,"left":"left","borderWidth":0,"textStyle":{"textBorderWidth":0,"color":"#333","textShadowColor":"transparent","fontSize":14,"lineHeight":24,"textShadowOffsetX":0,"textShadowOffsetY":0,"textBorderType":"solid","fontWeight":600,"textBorderColor":"#666","textShadowBlur":0},"shadowColor":"transparent"},"base":{"animate":false,"interval":2000}},
 			pie: {"tooltip":{"backgroundColor":"#123","textStyle":{"color":"#fff"}},"backgroundColor":"transparent","color":["#378bb9","#095dac","#fbc62f","#16606a","#f75d5f","#5967cc","#faa07b","#9ab7a8","#ea7ccc"],"title":{"borderType":"solid","padding":[5,0,0,0],"shadowOffsetX":0,"backgroundColor":"transparent","borderColor":"#666","shadowOffsetY":0,"shadowBlur":0,"bottom":"auto","show":true,"right":"auto","top":"auto","borderRadius":0,"left":"left","borderWidth":0,"textStyle":{"textBorderWidth":0,"color":"#333","textShadowColor":"transparent","fontSize":14,"lineHeight":14,"textShadowOffsetX":0,"textShadowOffsetY":0,"textBorderType":"solid","fontWeight":600,"textBorderColor":"#666","textShadowBlur":0},"shadowColor":"transparent"},"legend":{"padding":[5,0,0,0],"itemGap":10,"shadowOffsetX":0,"backgroundColor":"transparent","borderColor":"#666","shadowOffsetY":0,"orient":"horizontal","shadowBlur":0,"bottom":"auto","itemHeight":2,"show":true,"icon":"roundRect","itemStyle":{"borderType":"solid","shadowOffsetX":0,"borderColor":"inherit","shadowOffsetY":0,"color":"inherit","shadowBlur":0,"borderWidth":0,"opacity":1,"shadowColor":"transparent"},"right":0,"top":"auto","borderRadius":0,"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"color":"inherit","shadowBlur":0,"width":"auto","type":"inherit","opacity":1,"shadowColor":"transparent"},"left":"right","borderWidth":0,"width":"80%","itemWidth":2,"textStyle":{"textBorderWidth":0,"color":"inherit","textShadowColor":"transparent","ellipsis":"...","overflow":"none","fontSize":12,"lineHeight":12,"textShadowOffsetX":0,"textShadowOffsetY":0,"textBorderType":"solid","fontWeight":500,"textBorderColor":"transparent","textShadowBlur":0},"shadowColor":"rgba(0,0,0,.3)","height":"auto"},"series":{"itemStyle":{"borderType":"solid","shadowOffsetX":0,"borderColor":"#666","shadowOffsetY":0,"color":"","shadowBlur":0,"borderWidth":0,"opacity":1,"shadowColor":"#000"},"label":{"borderType":"solid","rotate":0,"padding":0,"textBorderWidth":0,"backgroundColor":"transparent","borderColor":"#666","color":"inherit","show":true,"textShadowColor":"transparent","distanceToLabelLine":5,"ellipsis":"...","overflow":"none","borderRadius":0,"borderWidth":0,"fontSize":12,"lineHeight":18,"textShadowOffsetX":0,"position":"outside","textShadowOffsetY":0,"textBorderType":"solid","textBorderColor":"#666","textShadowBlur":0},"labelLine":{"show":true,"length":10,"lineStyle":{"shadowOffsetX":0,"shadowOffsetY":0,"color":"#666","shadowBlur":0,"width":1,"type":"solid","opacity":1,"shadowColor":"#000"},"length2":14,"smooth":false}}},
@@ -100,6 +111,7 @@ export default {
 		if(this.isHomeVisible('yuangongxinzi','首页统计',2)){
 			this.yuangongxinziChat1();
 		}
+		this.loadHomeReminders();
 		window.addEventListener('scroll', this.handleScroll)
 		window.addEventListener('resize', this.resizeAllHomeCharts)
 		setTimeout(()=>{
@@ -186,6 +198,80 @@ export default {
 			return {
 				conditionColumn: 'sfsh',
 				conditionValue: '是'
+			}
+		},
+		goReminder(path) {
+			if (!path) return
+			this.$router.push({ path })
+		},
+		async getPageTotal(url, params = {}) {
+			const query = Object.assign({ page: 1, limit: 1, sort: 'id', order: 'desc' }, params)
+			const { data } = await this.$http({ url, method: 'get', params: query })
+			if (data && data.code === 0 && data.data) {
+				return Number(data.data.total || 0)
+			}
+			return 0
+		},
+		async getEmployeeSalaryConfirmCount() {
+			const userId = this.$storage.get('userid')
+			const salaryRes = await this.$http({
+				url: 'yuangongxinzi/page',
+				method: 'get',
+				params: { page: 1, limit: 1000, sort: 'id', order: 'desc', sfsh: '是', ispay: '未支付' }
+			})
+			const salaryList = salaryRes.data && salaryRes.data.code === 0 && salaryRes.data.data ? (salaryRes.data.data.list || []) : []
+			if (!salaryList.length) return 0
+			const agreeRes = await this.$http({
+				url: 'tongyixinxi/page',
+				method: 'get',
+				params: { page: 1, limit: 1000, sort: 'id', order: 'desc', crossuserid: userId }
+			})
+			const agreeList = agreeRes.data && agreeRes.data.code === 0 && agreeRes.data.data ? (agreeRes.data.data.list || []) : []
+			const agreedIds = new Set(agreeList.map(item => String(item.crossrefid)))
+			return salaryList.filter(item => !agreedIds.has(String(item.id))).length
+		},
+		async loadHomeReminders() {
+			const table = this.$storage.get('sessionTable')
+			const role = this.$storage.get('role')
+			const cards = []
+			try {
+				if (table === 'yuangong') {
+					const salaryConfirmCount = await this.getEmployeeSalaryConfirmCount()
+					const appealPendingCount = await this.getPageTotal('zhiweishensu/page', { sfsh: '待审核' })
+					cards.push({
+						key: 'employee-salary-confirm',
+						title: '薪资待确认',
+						desc: salaryConfirmCount > 0 ? `有 ${salaryConfirmCount} 条薪资信息待确认` : '暂无薪资信息需要确认',
+						count: salaryConfirmCount,
+						path: '/yuangongxinzi'
+					})
+					cards.push({
+						key: 'employee-appeal-pending',
+						title: '申诉处理中',
+						desc: appealPendingCount > 0 ? `有 ${appealPendingCount} 条申诉等待处理` : '暂无待处理申诉',
+						count: appealPendingCount,
+						path: '/zhiweishensu'
+					})
+				} else if (table === 'renshiguanliyuan') {
+					const leavePendingCount = await this.getPageTotal('qingjiashenqing/page', { sfsh: '待审核' })
+					const appealPendingCount = await this.getPageTotal('zhiweishensu/page', { sfsh: '待审核' })
+					const salaryPendingCount = await this.getPageTotal('yuangongxinzi/page', { sfsh: '待审核' })
+					const salaryPayCount = await this.getPageTotal('yuangongxinzi/page', { sfsh: '是', ispay: '未支付' })
+					cards.push({ key: 'hr-leave-pending', title: '请假待审核', desc: `有 ${leavePendingCount} 条请假申请待审核`, count: leavePendingCount, path: '/qingjiashenqing' })
+					cards.push({ key: 'hr-appeal-pending', title: '申诉待处理', desc: `有 ${appealPendingCount} 条申诉信息待处理`, count: appealPendingCount, path: '/zhiweishensu' })
+					cards.push({ key: 'hr-salary-pending', title: '薪资待审核', desc: `有 ${salaryPendingCount} 条薪资信息待审核`, count: salaryPendingCount, path: '/yuangongxinzi' })
+					cards.push({ key: 'hr-salary-pay', title: '工资待支付', desc: `有 ${salaryPayCount} 条薪资信息待支付`, count: salaryPayCount, path: '/yuangongxinzi' })
+				} else if (table === 'users' || role === '管理员' || role === 'admin') {
+					const salaryPendingCount = await this.getPageTotal('yuangongxinzi/page', { sfsh: '待审核' })
+					const appealPendingCount = await this.getPageTotal('zhiweishensu/page', { sfsh: '待审核' })
+					const salaryPayCount = await this.getPageTotal('yuangongxinzi/page', { sfsh: '是', ispay: '未支付' })
+					cards.push({ key: 'admin-salary-pending', title: '薪资待审核', desc: `有 ${salaryPendingCount} 条薪资信息待审核`, count: salaryPendingCount, path: '/yuangongxinzi' })
+					cards.push({ key: 'admin-appeal-pending', title: '申诉待处理', desc: `有 ${appealPendingCount} 条申诉信息待处理`, count: appealPendingCount, path: '/zhiweishensu' })
+					cards.push({ key: 'admin-salary-pay', title: '工资待支付', desc: `有 ${salaryPayCount} 条薪资信息待支付`, count: salaryPayCount, path: '/yuangongxinzi' })
+				}
+				this.reminderCards = cards
+			} catch (e) {
+				this.reminderCards = []
 			}
 		},
 		// 格式化工资区间标签
@@ -1322,6 +1408,60 @@ export default {
 				transform: translate3d(0, -6px, 0);
 				z-index: 1;
 				background: rgba(255,255,255,1);
+			}
+		}
+		.reminder-box {
+			display: flex;
+			flex-wrap: wrap;
+			width: 100%;
+			margin: 0 0 10px;
+			padding: 0;
+			.reminder-card {
+				box-sizing: border-box;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				width: calc(25% - 20px);
+				min-width: 230px;
+				min-height: 96px;
+				margin: 10px;
+				padding: 18px 20px;
+				background: #fff;
+				border: 1px solid #e5f0f9;
+				border-radius: 8px;
+				box-shadow: 0 2px 8px rgba(9, 93, 172, 0.06);
+				cursor: pointer;
+				transition: 0.25s;
+				.reminder-main {
+					min-width: 0;
+					padding-right: 12px;
+					.reminder-title {
+						margin-bottom: 8px;
+						color: #1a3a52;
+						font-size: 16px;
+						font-weight: 600;
+						line-height: 22px;
+					}
+					.reminder-desc {
+						color: #666;
+						font-size: 13px;
+						line-height: 20px;
+						word-break: break-word;
+					}
+				}
+				.reminder-count {
+					flex-shrink: 0;
+					min-width: 48px;
+					color: #095dac;
+					font-size: 30px;
+					font-weight: 700;
+					line-height: 1;
+					text-align: right;
+				}
+			}
+			.reminder-card:hover {
+				box-shadow: 0 8px 24px rgba(9, 93, 172, 0.1);
+				transform: translate3d(0, -4px, 0);
 			}
 		}
 		/* 工资统计：在员工人数/人事人数下方，全宽显示 */

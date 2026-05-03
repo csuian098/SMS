@@ -61,6 +61,12 @@
 					</div>
 				</div>
 
+				<el-row v-if="tablename=='yuangong'" class="sign-demo-time-row" :style='{"width":"100%","margin":"16px 0 0","padding":"12px 14px","display":"flex","gap":"12px","alignItems":"center","background":"#fff","border":"1px solid #e9eafc","borderRadius":"8px","flexWrap":"wrap"}'>
+					<label :style='{"whiteSpace":"nowrap","color":"#666","fontSize":"15px","fontWeight":"500"}'>演示打卡时间</label>
+					<el-date-picker v-model="demoSignTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss" placeholder="不选择则使用当前时间" size="small"></el-date-picker>
+					<el-button type="primary" size="small" @click="demoSignTime = nowDateTimeStr()">当前时间</el-button>
+					<el-button size="small" @click="demoSignTime = ''">清空</el-button>
+				</el-row>
 				<el-row v-if="tablename=='yuangong'" class="sign-actions-row" :style='{"width":"100%","margin":"16px 0 0","padding":"0","display":"flex","gap":"12px"}'>
 					<el-button type="primary" class="sign-btn" :disabled="!canQuickSign('签到')" @click="quickSign('签到')">签到</el-button>
 					<el-button type="primary" class="sign-btn" :disabled="!canQuickSign('签退')" @click="quickSign('签退')">签退</el-button>
@@ -202,6 +208,7 @@
 				calendarLoading: false,
 				calendarHint: '',
 				selectedDate: null,
+				demoSignTime: '',
 				todaySignState: {
 					hasSignIn: false,
 					hasSignOut: false,
@@ -223,6 +230,9 @@
 			});
 		},
 		watch: {
+			demoSignTime() {
+				this.loadTodaySignState()
+			},
 		},
 		filters: {
 			htmlfilter: function (val) {
@@ -317,6 +327,14 @@
 				const p = n => (n < 10 ? '0' : '') + n
 				return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
 			},
+			activeSignDateStr() {
+				if (this.demoSignTime && /^\d{4}-\d{2}-\d{2}/.test(this.demoSignTime)) {
+					return this.demoSignTime.substring(0, 10)
+				}
+				const d = new Date()
+				const p = n => (n < 10 ? '0' : '') + n
+				return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+			},
 			quickSign(qiandaodidian) {
 				if (this.tablename !== 'yuangong') {
 					this.$message.warning('请使用员工账号进行打卡')
@@ -334,7 +352,7 @@
 					gonghao: u.gonghao || '',
 					xingming: u.xingming || '',
 					touxiang: u.touxiang || '',
-					qiandaoshijian: this.nowDateTimeStr(),
+					qiandaoshijian: this.demoSignTime || this.nowDateTimeStr(),
 					qiandaodidian: qiandaodidian
 				}
 				if (!payload.gonghao) {
@@ -350,6 +368,10 @@
 					this.quickSignLoading = false
 					if (data && data.code === 0) {
 						this.$message.success(qiandaodidian + ' 已记录')
+						const signMonth = String(payload.qiandaoshijian).substring(0, 7)
+						if (/^\d{4}-\d{2}$/.test(signMonth)) {
+							this.calendarMonth = signMonth
+						}
 						this.search()
 					} else {
 						this.$message.error((data && data.msg) || '保存失败')
@@ -416,9 +438,7 @@
 				}
 				const gonghao = u.gonghao || ''
 				if (!gonghao) return
-				const d = new Date()
-				const p = n => (n < 10 ? '0' : '') + n
-				const day = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+				const day = this.activeSignDateStr()
 				const params = {
 					page: 1,
 					limit: 200,
