@@ -92,14 +92,23 @@
 				<el-form-item class="input" label="加班时长(小时)">
 					<el-input :value="jiabanshichangDisplay" placeholder="加班时长(小时)" readonly></el-input>
 				</el-form-item>
-				<el-form-item class="input" v-if="type!='info'"  label="岗位补贴" prop="gangweibutie" >
-					<el-input-number v-model="ruleForm.gangweibutie" placeholder="岗位补贴" :disabled="ro.gangweibutie" @change="calcShifagongzi"></el-input-number>
+				<el-form-item class="input linkage-field" v-if="type!='info'"  label="职位补贴" prop="gangweibutie" >
+					<el-select v-if="gangweibutieType!=='自定义'" v-model="gangweibutieType" placeholder="请选择职位补贴" :disabled="ro.gangweibutie" @change="handleGangweibutieTypeChange">
+						<el-option label="一等补贴（500）" value="一等补贴"></el-option>
+						<el-option label="二等补贴（300）" value="二等补贴"></el-option>
+						<el-option label="三等补贴（100）" value="三等补贴"></el-option>
+						<el-option label="无补贴" value="无补贴"></el-option>
+						<el-option label="自定义" value="自定义"></el-option>
+					</el-select>
+					<el-input v-if="gangweibutieType==='自定义'" v-model="gangweibutieCustomName" placeholder="自定义" clearable :readonly="ro.gangweibutie"></el-input>
+					<el-input-number v-if="gangweibutieType==='自定义'" v-model="ruleForm.gangweibutie" placeholder="请输入补贴金额" :disabled="ro.gangweibutie" @change="calcShifagongzi"></el-input-number>
+					<el-input v-else v-model="ruleForm.gangweibutie" placeholder="职位补贴" disabled></el-input>
 				</el-form-item>
-				<el-form-item v-else class="input" label="岗位补贴" prop="gangweibutie" >
-					<el-input v-model="ruleForm.gangweibutie" placeholder="岗位补贴" readonly></el-input>
+				<el-form-item v-else class="input" label="职位补贴" prop="gangweibutie" >
+					<el-input v-model="ruleForm.gangweibutie" placeholder="职位补贴" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-if="type!='info'"  label="扣款金额" prop="koukuanjine" >
-					<el-input-number v-model="ruleForm.koukuanjine" placeholder="扣款金额" :disabled="ro.koukuanjine" @change="calcShifagongzi"></el-input-number>
+					<el-input-number v-model="ruleForm.koukuanjine" placeholder="扣款金额" :disabled="ro.koukuanjine || koukuanType !== '其他扣款'" @change="calcShifagongzi"></el-input-number>
 				</el-form-item>
 				<el-form-item v-else class="input" label="扣款金额" prop="koukuanjine" >
 					<el-input v-model="ruleForm.koukuanjine" placeholder="扣款金额" readonly></el-input>
@@ -110,8 +119,13 @@
 				<el-form-item class="input" v-else-if="ruleForm.shifagongzi" label="实发工资" prop="shifagongzi" >
 					<el-input v-model="ruleForm.shifagongzi" placeholder="实发工资" readonly></el-input>
 				</el-form-item>
-				<el-form-item class="input" v-if="type!='info'"  label="扣款原因" prop="koukuanyuanyin" >
-					<el-input v-model="ruleForm.koukuanyuanyin" placeholder="扣款原因" clearable  :readonly="ro.koukuanyuanyin"></el-input>
+				<el-form-item class="input linkage-field" v-if="type!='info'"  label="扣款原因" prop="koukuanyuanyin" >
+					<el-select v-model="koukuanType" placeholder="请选择扣款原因" :disabled="ro.koukuanyuanyin" @change="handleKoukuanTypeChange">
+						<el-option label="社保公积金" value="社保公积金"></el-option>
+						<el-option label="其他扣款" value="其他扣款"></el-option>
+						<el-option label="无扣款" value="无扣款"></el-option>
+					</el-select>
+					<el-input v-if="koukuanType==='其他扣款'" v-model="ruleForm.koukuanyuanyin" placeholder="请输入扣款原因" clearable :readonly="ro.koukuanyuanyin"></el-input>
 				</el-form-item>
 				<el-form-item v-else class="input" label="扣款原因" prop="koukuanyuanyin" >
 					<el-input v-model="ruleForm.koukuanyuanyin" placeholder="扣款原因" readonly></el-input>
@@ -194,6 +208,9 @@
 				jiabanshichangTotal: 0,
 				yuangongBaseJiabancishu: 0,
 				yuangongBaseQingjiatianshu: 0,
+				gangweibutieType: '无补贴',
+				gangweibutieCustomName: '',
+				koukuanType: '无扣款',
 			
 			
 				ro:{
@@ -296,8 +313,106 @@
 		},
 		created() {
 			this.ruleForm.dengjiriqi = this.getCurDate()
+			this.ruleForm.gangweibutie = 0
+			this.ruleForm.koukuanjine = 0
+			this.ruleForm.koukuanyuanyin = '无扣款'
 		},
 		methods: {
+			round2(value) {
+				return Number((Number(value) || 0).toFixed(2))
+			},
+			initGangweibutieType() {
+				const value = Number(this.ruleForm.gangweibutie)
+				if (!this.ruleForm.gangweibutie && value !== 0) {
+					this.gangweibutieType = '无补贴'
+					this.ruleForm.gangweibutie = 0
+					return
+				}
+				if (value === 500) {
+					this.gangweibutieType = '一等补贴'
+				} else if (value === 300) {
+					this.gangweibutieType = '二等补贴'
+				} else if (value === 100) {
+					this.gangweibutieType = '三等补贴'
+				} else if (value === 0) {
+					this.gangweibutieType = '无补贴'
+				} else {
+					this.gangweibutieType = '自定义'
+					this.gangweibutieCustomName = ''
+				}
+			},
+			handleGangweibutieTypeChange(value) {
+				const map = {
+					'一等补贴': 500,
+					'二等补贴': 300,
+					'三等补贴': 100,
+					'无补贴': 0,
+				}
+				if (value === '自定义') {
+					this.gangweibutieCustomName = ''
+					this.ruleForm.gangweibutie = ''
+				} else {
+					this.gangweibutieCustomName = ''
+					this.ruleForm.gangweibutie = map[value]
+				}
+				this.calcShifagongzi()
+			},
+			getGangweibutieTypeByZhiwei(zhiwei) {
+				const position = String(zhiwei || '').trim()
+				const firstLevel = ['总经理', '副总经理', '财务总监', '技术总监', '人力资源总监', '销售总监']
+				const secondLevel = ['客户服务经理', '行政主管', '高级软件工程师', '高级会计师', '市场部经理', '项目经理', '销售区域经理', '财务会计主管', '生产车间班组长']
+				const thirdLevel = ['测试工程师', '技术支持工程师', '设计部UI设计师', '运营数据分析员', '人力资源专员', '市场推广专员', '销售代表', '客服专员']
+				if (firstLevel.includes(position)) {
+					return '一等补贴'
+				}
+				if (secondLevel.includes(position)) {
+					return '二等补贴'
+				}
+				if (thirdLevel.includes(position)) {
+					return '三等补贴'
+				}
+				return '无补贴'
+			},
+			applyGangweibutieByZhiwei(zhiwei) {
+				const type = this.getGangweibutieTypeByZhiwei(zhiwei)
+				this.gangweibutieType = type
+				this.gangweibutieCustomName = ''
+				this.handleGangweibutieTypeChange(type)
+			},
+			initKoukuanType() {
+				const reason = this.ruleForm.koukuanyuanyin
+				const amount = Number(this.ruleForm.koukuanjine) || 0
+				if (reason === '社保公积金') {
+					this.koukuanType = '社保公积金'
+					this.applyKoukuanPolicy(false)
+				} else if (reason === '无扣款' || (!reason && amount === 0)) {
+					this.koukuanType = '无扣款'
+					this.applyKoukuanPolicy(false)
+				} else {
+					this.koukuanType = '其他扣款'
+				}
+			},
+			handleKoukuanTypeChange(value) {
+				if (value === '其他扣款') {
+					this.ruleForm.koukuanyuanyin = ''
+					this.ruleForm.koukuanjine = ''
+					this.calcShifagongzi()
+				} else {
+					this.applyKoukuanPolicy()
+				}
+			},
+			applyKoukuanPolicy(recalc = true) {
+				if (this.koukuanType === '社保公积金') {
+					this.ruleForm.koukuanyuanyin = '社保公积金'
+					this.ruleForm.koukuanjine = this.round2((Number(this.ruleForm.jibengongzi) || 0) * 0.175)
+				} else if (this.koukuanType === '无扣款') {
+					this.ruleForm.koukuanyuanyin = '无扣款'
+					this.ruleForm.koukuanjine = 0
+				}
+				if (recalc) {
+					this.calcShifagongzi()
+				}
+			},
 			calcShifagongzi() {
 				const c = this.ruleForm
 				c.jixiaojiangjin = 0
@@ -320,6 +435,7 @@
 				this.ruleForm.jiabangongzi = Number(jiabangongzi.toFixed(2))
 			},
 			handleJibengongziChange() {
+				this.applyKoukuanPolicy()
 				this.loadSalaryAssistant()
 			},
 			getMonthRangeByDengjiriqi() {
@@ -529,6 +645,8 @@
 						this.$message.error(data.msg);
 					}
 				});
+				this.initGangweibutieType()
+				this.initKoukuanType()
 				if (this.ruleForm.gonghao) {
 					this.syncKaoqinAndQingjiaData()
 				}
@@ -547,6 +665,7 @@
 						this.jiabanshichangTotal = Number(data.data.jiabanshichang) || 0
 						this.yuangongBaseJiabancishu = Number(data.data.jiabantianshu || data.data.jiabancishu) || 0
 						this.yuangongBaseQingjiatianshu = Number(data.data.qingjiatianshu) || 0
+						this.applyGangweibutieByZhiwei(data.data.zhiwei)
 						await this.syncKaoqinAndQingjiaData()
 					} else {
 						this.$message.error(data.msg);
@@ -570,6 +689,7 @@
 						this.jiabanshichangTotal = Number(data.data.jiabanshichang) || 0
 						this.yuangongBaseJiabancishu = Number(data.data.jiabantianshu || data.data.jiabancishu) || 0
 						this.yuangongBaseQingjiatianshu = Number(data.data.qingjiatianshu) || 0
+						this.applyGangweibutieByZhiwei(data.data.zhiwei)
 						await this.syncKaoqinAndQingjiaData()
 					} else {
 						this.ruleForm.xingming = ''
@@ -592,6 +712,8 @@
 					if (data && data.code === 0) {
 						this.ruleForm = data.data;
 						this.ruleForm.jixiaojiangjin = 0
+						this.initGangweibutieType()
+						this.initKoukuanType()
 						this.jiabanshichangTotal = 0
 						this.yuangongBaseJiabancishu = 0
 						this.yuangongBaseQingjiatianshu = 0
@@ -623,6 +745,7 @@
 			// 提交
 			async onSubmit() {
 					this.ruleForm.jixiaojiangjin = 0
+					this.applyKoukuanPolicy(false)
 					this.calcShifagongzi()
 					if(!this.ruleForm.id) {
 						this.ruleForm.ispay = '未支付'
@@ -826,6 +949,15 @@
 	
 	.add-update-preview .el-input {
 		width: 100%;
+	}
+	.add-update-preview .linkage-field .el-select,
+	.add-update-preview .linkage-field .el-input,
+	.add-update-preview .linkage-field .el-input-number {
+		margin-bottom: 8px;
+	}
+	.add-update-preview .linkage-field .el-input:last-child,
+	.add-update-preview .linkage-field .el-input-number:last-child {
+		margin-bottom: 0;
 	}
 	.add-update-preview .el-input /deep/ .el-input__inner {
 		border-radius: 10px;
