@@ -263,7 +263,7 @@ export default {
       for (let i = 0; i < this.dataListSelections.length; i++) {
         const row = this.dataListSelections[i]
         if (row.sfsh && row.sfsh !== '待审核') {
-          this.$message.error('存在已审核数据，不能继续操作')
+          this.$message.error('选中记录中存在已审核请假，不能重复审核')
           return false
         }
         this.batchIds.push(row.id)
@@ -275,7 +275,7 @@ export default {
     shBatchHandler() {
       this.$refs.shBatchForm.validate(valid => {
         if (!valid) return
-        this.$confirm(`是否${this.batchIds.length > 1 ? '批量审核' : '审核'}选中数据?`, '提示', {
+        this.$confirm(`确认${this.batchIds.length > 1 ? '批量审核' : '审核'}选中的请假申请吗？`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'

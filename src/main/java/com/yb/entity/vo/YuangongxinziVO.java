@@ -55,6 +55,11 @@ public class YuangongxinziVO  implements Serializable {
 	 */
 	
 	private Double gangweibutie;
+
+	/**
+	 * 职位补贴项目
+	 */
+	private String gangweibutiexiangmu;
 		
 	/**
 	 * 扣款金额
@@ -218,6 +223,20 @@ public class YuangongxinziVO  implements Serializable {
 	 */
 	public Double getGangweibutie() {
 		return gangweibutie;
+	}
+
+	/**
+	 * 设置：职位补贴项目
+	 */
+	public void setGangweibutiexiangmu(String gangweibutiexiangmu) {
+		this.gangweibutiexiangmu = gangweibutiexiangmu;
+	}
+
+	/**
+	 * 获取：职位补贴项目
+	 */
+	public String getGangweibutiexiangmu() {
+		return gangweibutiexiangmu;
 	}
 				
 	

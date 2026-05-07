@@ -27,9 +27,11 @@ import com.yb.annotation.SysLog;
 import com.yb.entity.ZhiweidiaodongEntity;
 import com.yb.entity.view.ZhiweidiaodongView;
 import com.yb.entity.YuangongEntity;
+import com.yb.entity.ZhiweishensuEntity;
 
 import com.yb.service.ZhiweidiaodongService;
 import com.yb.service.YuangongService;
+import com.yb.service.ZhiweishensuService;
 import com.yb.utils.PageUtils;
 import com.yb.utils.R;
 import com.yb.utils.EncryptUtil;
@@ -53,6 +55,9 @@ public class ZhiweidiaodongController {
 
     @Autowired
     private YuangongService yuangongService;
+
+    @Autowired
+    private ZhiweishensuService zhiweishensuService;
 
 
 
@@ -212,7 +217,17 @@ public class ZhiweidiaodongController {
     @RequestMapping("/delete")
     @SysLog("鍒犻櫎鑱屼綅璋冨姩")
     public R delete(@RequestBody Long[] ids){
+        List<ZhiweidiaodongEntity> removeList = zhiweidiaodongService.listByIds(Arrays.asList(ids));
+        Set<String> affectedGonghao = new HashSet<>();
+        for (ZhiweidiaodongEntity item : removeList) {
+            if (item != null && StringUtils.isNotBlank(item.getGonghao())) {
+                affectedGonghao.add(item.getGonghao());
+            }
+        }
         zhiweidiaodongService.removeBatchByIds(Arrays.asList(ids));
+        for (String gonghao : affectedGonghao) {
+            recomputeEmployeePosition(gonghao);
+        }
         return R.ok();
     }
 
@@ -223,20 +238,61 @@ public class ZhiweidiaodongController {
     // hasAlipay:鍚?
 
     private void applyEmployeePositionChange(ZhiweidiaodongEntity zhiweidiaodong) {
-        if (zhiweidiaodong == null
-                || StringUtils.isBlank(zhiweidiaodong.getGonghao())
-                || StringUtils.isBlank(zhiweidiaodong.getXianzhiwei())) {
+        if (zhiweidiaodong == null || StringUtils.isBlank(zhiweidiaodong.getGonghao())) {
+            return;
+        }
+        recomputeEmployeePosition(zhiweidiaodong.getGonghao());
+    }
+
+    private void recomputeEmployeePosition(String gonghao) {
+        if (StringUtils.isBlank(gonghao)) {
+            return;
+        }
+        ZhiweidiaodongEntity latest = zhiweidiaodongService.getOne(
+                new QueryWrapper<ZhiweidiaodongEntity>()
+                        .eq("gonghao", gonghao)
+                        .orderByDesc("biandongriqi")
+                        .orderByDesc("id")
+                        .last("limit 1"),
+                false
+        );
+        if (latest == null) {
+            return;
+        }
+        String finalPosition = latest.getXianzhiwei();
+        ZhiweishensuEntity appeal = zhiweishensuService.getOne(
+                new QueryWrapper<ZhiweishensuEntity>()
+                        .eq("gonghao", gonghao)
+                        .eq("crossrefid", latest.getId())
+                        .and(wrapper -> wrapper.isNull("shhf").or().ne("shhf", "salary_appeal"))
+                        .and(wrapper -> wrapper.isNull("shensuyuanyin")
+                                .or(condition -> condition.notLike("shensuyuanyin", "工资")
+                                        .notLike("shensuyuanyin", "薪资")
+                                        .notLike("shensuyuanyin", "宸ヨ祫")
+                                        .notLike("shensuyuanyin", "钖祫")))
+                        .orderByDesc("id")
+                        .last("limit 1"),
+                false
+        );
+        if (appeal != null && isApproved(appeal.getSfsh())) {
+            finalPosition = latest.getZhiwei();
+        }
+        if (StringUtils.isBlank(finalPosition)) {
             return;
         }
         YuangongEntity yuangong = yuangongService.getOne(
-                new QueryWrapper<YuangongEntity>().eq("gonghao", zhiweidiaodong.getGonghao()),
+                new QueryWrapper<YuangongEntity>().eq("gonghao", gonghao),
                 false
         );
         if (yuangong == null) {
             return;
         }
-        yuangong.setZhiwei(zhiweidiaodong.getXianzhiwei());
+        yuangong.setZhiwei(finalPosition);
         yuangongService.updateById(yuangong);
+    }
+
+    private boolean isApproved(String sfsh) {
+        return "是".equals(sfsh) || "鏄?".equals(sfsh);
     }
 
 

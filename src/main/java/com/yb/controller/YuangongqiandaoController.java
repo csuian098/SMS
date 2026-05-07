@@ -224,12 +224,12 @@ public class YuangongqiandaoController {
 
     private String validateSignAction(YuangongqiandaoEntity entity) {
         if (entity == null || StringUtils.isBlank(entity.getGonghao())) {
-            return "工号不能为空";
+            return "工号不能为空，无法保存打卡记录";
         }
         String type = entity.getQiandaodidian() == null ? "" : entity.getQiandaodidian().trim();
         List<String> allowed = Arrays.asList("签到", "签退", "加班开始", "加班结束");
         if (!allowed.contains(type)) {
-            return "打卡类型不合法";
+            return "打卡类型不正确，请重新选择";
         }
         Date signTime = entity.getQiandaoshijian() == null ? new Date() : entity.getQiandaoshijian();
         entity.setQiandaoshijian(signTime);
@@ -260,26 +260,26 @@ public class YuangongqiandaoController {
         boolean hasOvertimeEnd = dayList.stream().anyMatch(i -> "加班结束".equals(i.getQiandaodidian()));
 
         if ("签到".equals(type)) {
-            if (hasSignIn) return "今日已签到，不能重复签到";
-            if (hasSignOut || hasOvertimeStart || hasOvertimeEnd) return "今日已存在后续打卡记录，不能再签到";
+            if (hasSignIn) return "该日期已签到，不能重复签到";
+            if (hasSignOut || hasOvertimeStart || hasOvertimeEnd) return "该日期已有签退或加班记录，不能再补签到";
             return null;
         }
         if ("签退".equals(type)) {
-            if (!hasSignIn) return "请先签到再签退";
-            if (hasSignOut) return "今日已签退，不能重复签退";
-            if (hasOvertimeStart || hasOvertimeEnd) return "已进入加班流程，不能再签退";
+            if (!hasSignIn) return "请先完成签到，再进行签退";
+            if (hasSignOut) return "该日期已签退，不能重复签退";
+            if (hasOvertimeStart || hasOvertimeEnd) return "该日期已进入加班流程，不能再签退";
             return null;
         }
         if ("加班开始".equals(type)) {
-            if (!hasSignIn) return "请先签到";
-            if (!hasSignOut) return "请先签退再加班开始";
-            if (hasOvertimeStart) return "今日已加班开始，不能重复操作";
-            if (hasOvertimeEnd) return "今日已加班结束，不能再加班开始";
+            if (!hasSignIn) return "请先完成签到，再开始加班";
+            if (!hasSignOut) return "请先完成签退，再开始加班";
+            if (hasOvertimeStart) return "该日期已加班开始，不能重复操作";
+            if (hasOvertimeEnd) return "该日期已加班结束，不能再开始加班";
             return null;
         }
         if ("加班结束".equals(type)) {
-            if (!hasOvertimeStart) return "请先加班开始";
-            if (hasOvertimeEnd) return "今日已加班结束，不能重复操作";
+            if (!hasOvertimeStart) return "请先进行加班开始，再加班结束";
+            if (hasOvertimeEnd) return "该日期已加班结束，不能重复操作";
         }
         return null;
     }

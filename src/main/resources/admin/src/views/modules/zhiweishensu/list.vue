@@ -19,6 +19,13 @@
 							<el-option v-for="(item,index) in sfshOptions" v-bind:key="index" :label="item" :value="item"></el-option>
 						</el-select>
 					</div>
+					<div v-if="queryChange(['人事管理员', '管理员'])" :style='{"margin":"0 1% 10px 0","display":"flex"}' class="select">
+						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">申诉类型</label>
+						<el-select clearable v-model="searchForm.shensuleixing" placeholder="申诉类型">
+							<el-option label="薪资异议" value="薪资异议"></el-option>
+							<el-option label="职位异议" value="职位异议"></el-option>
+						</el-select>
+					</div>
 					<el-button class="search" type="success" @click="search()">
 						<span class="icon iconfont icon-fangdajing01" :style='{"margin":"0 0px","fontSize":"16px","color":"#fff","height":"40px"}'></span>
 						查询
@@ -62,6 +69,20 @@
 							{{scope.row.xingming}}
 						</template>
 					</el-table-column>
+					<el-table-column v-if="tablename=='yuangong'" :resizable='true' :sortable='true'
+												prop="zhiwei"
+						label="原职位">
+						<template slot-scope="scope">
+							{{scope.row.zhiwei || '-'}}
+						</template>
+					</el-table-column>
+					<el-table-column v-if="tablename=='yuangong'" :resizable='true' :sortable='true'
+												prop="xianzhiwei"
+						label="现职位">
+						<template slot-scope="scope">
+							{{scope.row.xianzhiwei || '-'}}
+						</template>
+					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="shensuriqi"
 						label="申诉日期">
@@ -88,6 +109,12 @@
 							<el-tag v-if="scope.row.sfsh=='否'" type="danger">未通过</el-tag>
 							<el-tag v-if="scope.row.sfsh=='待审核'" type="warning">待审核</el-tag>
 							<el-tag v-if="scope.row.sfsh=='是'" type="success">通过</el-tag>
+						</template>
+					</el-table-column>
+					<el-table-column :resizable='true' prop="shensuleixing" label="具体">
+						<template slot-scope="scope">
+							<el-tag v-if="getAppealType(scope.row)=='薪资异议'" type="danger">薪资异议</el-tag>
+							<el-tag v-else type="info">职位异议</el-tag>
 						</template>
 					</el-table-column>
 					
@@ -232,6 +259,16 @@
 				this.pageIndex = 1;
 				this.getDataList();
 			},
+			getAppealType(row) {
+				if (!row) {
+					return '职位异议';
+				}
+				if (row.shensuleixing) {
+					return row.shensuleixing;
+				}
+				let reason = row.shensuyuanyin || '';
+				return row.shhf === 'salary_appeal' || reason.indexOf('工资') !== -1 || reason.indexOf('薪资') !== -1 ? '薪资异议' : '职位异议';
+			},
 
 			// 获取数据列表
 			getDataList() {
@@ -250,6 +287,9 @@
 				}
 				if(this.searchForm.sfsh!='' && this.searchForm.sfsh!=undefined){
 					params['sfsh'] = this.searchForm.sfsh
+				}
+				if(this.searchForm.shensuleixing!='' && this.searchForm.shensuleixing!=undefined){
+					params['shensuleixing'] = this.searchForm.shensuleixing
 				}
 				let user = JSON.parse(this.$storage.getObj('userForm'))
 				this.$http({
@@ -298,7 +338,7 @@
 			shBatchDialog(){
 				for(let x in this.dataListSelections){
 					if(this.dataListSelections[x].sfsh&&this.dataListSelections[x].sfsh!='待审核'){
-						this.$message.error('存在已审核数据，不能继续操作');
+						this.$message.error('选中记录中存在已审核申诉，不能重复审核');
 						this.batchIds = []
 						return false
 					}
@@ -311,7 +351,7 @@
 			shBatchHandler(){
 				this.$refs["shBatchForm"].validate(valid => {
 					if(valid){
-						this.$confirm(`是否${this.batchIds.length>1?'一键审核':'审核'}选中数据?`, "提示", {
+						this.$confirm(`确认${this.batchIds.length>1?'批量审核':'审核'}选中的申诉记录吗？`, "提示", {
 							confirmButtonText: "确定",
 							cancelButtonText: "取消",
 							type: "warning"

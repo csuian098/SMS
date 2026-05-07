@@ -90,10 +90,10 @@
 				<el-form-item class="select" v-if="type!='info'" label="管理姓名" prop="guanlixingming" >
 					<el-select :disabled="ro.guanlixingming" @change="guanlixingmingChange" v-model="ruleForm.guanlixingming" placeholder="请选择管理姓名" filterable>
 						<el-option
-							v-for="(item,index) in guanlixingmingOptions"
+							v-for="(item,index) in guanliOptions"
 							v-bind:key="index"
-							:label="item"
-							:value="item">
+							:label="item.label"
+							:value="item.guanlixingming">
 						</el-option>
 					</el-select>
 				</el-form-item>
@@ -101,7 +101,7 @@
 					<el-input v-model="ruleForm.guanlixingming" placeholder="管理姓名" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-if="type!='info'"  label="管理账号" prop="guanlizhanghao" >
-					<el-input v-model="ruleForm.guanlizhanghao" placeholder="管理账号" clearable  :readonly="ro.guanlizhanghao"></el-input>
+					<el-input v-model="ruleForm.guanlizhanghao" placeholder="管理账号" clearable  :readonly="ro.guanlizhanghao" @blur="guanlizhanghaoChange" @clear="clearGuanliLinkage"></el-input>
 				</el-form-item>
 				<el-form-item v-else class="input" label="管理账号" prop="guanlizhanghao" >
 					<el-input v-model="ruleForm.guanlizhanghao" placeholder="管理账号" readonly></el-input>
@@ -186,6 +186,7 @@
 				},
 				qingjialeixingOptions: [],
 				guanlixingmingOptions: [],
+				guanliOptions: [],
 
 				rules: {
 					gonghao: [
@@ -351,11 +352,38 @@
 				});
 				this.qingjialeixingOptions = "事假,婚假,病假,丧假,其他".split(',')
 				this.$http({
+					url: `renshiguanliyuan/page`,
+					method: "get",
+					params: {
+						page: 1,
+						limit: 1000,
+					}
+				}).then(({ data }) => {
+					if (data && data.code === 0 && data.data && data.data.list) {
+						this.guanliOptions = data.data.list.map(item => {
+							return {
+								guanlixingming: item.guanlixingming,
+								guanlizhanghao: item.guanlizhanghao,
+								label: item.guanlizhanghao ? `${item.guanlixingming}（${item.guanlizhanghao}）` : item.guanlixingming
+							}
+						});
+					} else {
+						this.$message.error(data.msg);
+					}
+				});
+				this.$http({
 					url: `option/renshiguanliyuan/guanlixingming`,
 					method: "get",
 				}).then(({ data }) => {
 					if (data && data.code === 0) {
 						this.guanlixingmingOptions = data.data;
+						if (!this.guanliOptions.length) {
+							this.guanliOptions = data.data.map(item => ({
+								guanlixingming: item,
+								guanlizhanghao: '',
+								label: item
+							}))
+						}
 					} else {
 						this.$message.error(data.msg);
 					}
@@ -376,6 +404,28 @@
 						this.$message.error(data.msg);
 					}
 				});
+			},
+			guanlizhanghaoChange () {
+				if (!this.ruleForm.guanlizhanghao) {
+					return
+				}
+				this.ruleForm.guanlizhanghao = String(this.ruleForm.guanlizhanghao).trim()
+				this.$http({
+					url: `follow/renshiguanliyuan/guanlizhanghao?columnValue=`+ encodeURIComponent(this.ruleForm.guanlizhanghao),
+					method: "get"
+				}).then(({ data }) => {
+					if (data && data.code === 0 && data.data) {
+						if(data.data.guanlixingming){
+							this.ruleForm.guanlixingming = data.data.guanlixingming
+						}
+					} else {
+						this.$message.error((data && data.msg) ? data.msg : '未找到该管理账号对应的人事管理员')
+					}
+				});
+			},
+			clearGuanliLinkage () {
+				this.ruleForm.guanlixingming = ''
+				this.ruleForm.guanlizhanghao = ''
 			},
 			// 多级联动参数
 

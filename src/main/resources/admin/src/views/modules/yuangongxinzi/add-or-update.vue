@@ -93,19 +93,19 @@
 					<el-input :value="jiabanshichangDisplay" placeholder="加班时长(小时)" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input linkage-field" v-if="type!='info'"  label="职位补贴" prop="gangweibutie" >
-					<el-select v-if="gangweibutieType!=='自定义'" v-model="gangweibutieType" placeholder="请选择职位补贴" :disabled="ro.gangweibutie" @change="handleGangweibutieTypeChange">
+					<el-select v-model="gangweibutieType" placeholder="请选择职位补贴" :disabled="ro.gangweibutie" @change="handleGangweibutieTypeChange">
 						<el-option label="一等补贴（500）" value="一等补贴"></el-option>
 						<el-option label="二等补贴（300）" value="二等补贴"></el-option>
 						<el-option label="三等补贴（100）" value="三等补贴"></el-option>
 						<el-option label="无补贴" value="无补贴"></el-option>
 						<el-option label="自定义" value="自定义"></el-option>
 					</el-select>
-					<el-input v-if="gangweibutieType==='自定义'" v-model="gangweibutieCustomName" placeholder="自定义" clearable :readonly="ro.gangweibutie"></el-input>
+					<el-input v-if="gangweibutieType==='自定义'" v-model="gangweibutieCustomName" placeholder="请输入补贴项目" clearable :readonly="ro.gangweibutie" @input="handleGangweibutieCustomNameChange"></el-input>
 					<el-input-number v-if="gangweibutieType==='自定义'" v-model="ruleForm.gangweibutie" placeholder="请输入补贴金额" :disabled="ro.gangweibutie" @change="calcShifagongzi"></el-input-number>
 					<el-input v-else v-model="ruleForm.gangweibutie" placeholder="职位补贴" disabled></el-input>
 				</el-form-item>
 				<el-form-item v-else class="input" label="职位补贴" prop="gangweibutie" >
-					<el-input v-model="ruleForm.gangweibutie" placeholder="职位补贴" readonly></el-input>
+					<el-input :value="gangweibutieInfoDisplay" placeholder="职位补贴" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-if="type!='info'"  label="扣款金额" prop="koukuanjine" >
 					<el-input-number v-model="ruleForm.koukuanjine" placeholder="扣款金额" :disabled="ro.koukuanjine || koukuanType !== '其他扣款'" @change="calcShifagongzi"></el-input-number>
@@ -208,6 +208,7 @@
 				jiabanshichangTotal: 0,
 				yuangongBaseJiabancishu: 0,
 				yuangongBaseQingjiatianshu: 0,
+				missingAttendanceDates: [],
 				gangweibutieType: '无补贴',
 				gangweibutieCustomName: '',
 				koukuanType: '无扣款',
@@ -242,6 +243,7 @@
 					jiabangongzi: '',
 					jixiaojiangjin: 0,
 					gangweibutie: '',
+					gangweibutiexiangmu: '',
 					koukuanjine: '',
 					jiaqikouxin: '',
 					shifagongzi: '',
@@ -305,6 +307,14 @@
 				const qjts = Number(this.ruleForm.qingjiatianshu) || 0
 				return Number((qjts * 100).toFixed(2))
 			},
+			gangweibutieInfoDisplay() {
+				const amount = this.ruleForm.gangweibutie
+				const item = String(this.ruleForm.gangweibutiexiangmu || '').trim()
+				if (item) {
+					return `${item}（${amount || 0}）`
+				}
+				return amount
+			},
 
 
 
@@ -323,9 +333,22 @@
 			},
 			initGangweibutieType() {
 				const value = Number(this.ruleForm.gangweibutie)
+				const item = String(this.ruleForm.gangweibutiexiangmu || '').trim()
+				const normalTypes = ['一等补贴', '二等补贴', '三等补贴', '无补贴']
+				if (item) {
+					if (normalTypes.includes(item)) {
+						this.gangweibutieType = item
+						this.gangweibutieCustomName = ''
+					} else {
+						this.gangweibutieType = '自定义'
+						this.gangweibutieCustomName = item
+					}
+					return
+				}
 				if (!this.ruleForm.gangweibutie && value !== 0) {
 					this.gangweibutieType = '无补贴'
 					this.ruleForm.gangweibutie = 0
+					this.ruleForm.gangweibutiexiangmu = '无补贴'
 					return
 				}
 				if (value === 500) {
@@ -340,6 +363,7 @@
 					this.gangweibutieType = '自定义'
 					this.gangweibutieCustomName = ''
 				}
+				this.ruleForm.gangweibutiexiangmu = this.gangweibutieType
 			},
 			handleGangweibutieTypeChange(value) {
 				const map = {
@@ -351,11 +375,16 @@
 				if (value === '自定义') {
 					this.gangweibutieCustomName = ''
 					this.ruleForm.gangweibutie = ''
+					this.ruleForm.gangweibutiexiangmu = ''
 				} else {
 					this.gangweibutieCustomName = ''
 					this.ruleForm.gangweibutie = map[value]
+					this.ruleForm.gangweibutiexiangmu = value
 				}
 				this.calcShifagongzi()
+			},
+			handleGangweibutieCustomNameChange(value) {
+				this.ruleForm.gangweibutiexiangmu = String(value || '').trim()
 			},
 			getGangweibutieTypeByZhiwei(zhiwei) {
 				const position = String(zhiwei || '').trim()
@@ -464,6 +493,7 @@
 			},
 			async loadSalaryAssistant() {
 				if (!this.ruleForm.gonghao || !this.ruleForm.dengjiriqi) {
+					this.missingAttendanceDates = []
 					this.ruleForm.qingjiatianshu = 0
 					this.ruleForm.weiqiandaotianshu = 0
 					this.ruleForm.weiqiandaokouxin = 0
@@ -495,13 +525,16 @@
 						this.ruleForm.jiaqikouxin = d.jiaqikouxin != null ? d.jiaqikouxin : 0
 						this.jiabanshichangTotal = Number(d.jiabanshichang) || 0
 						this.jiabancishuTotal = Number(d.jiabancishu) || 0
+						this.missingAttendanceDates = Array.isArray(d.incompleteAttendanceDates) ? d.incompleteAttendanceDates : []
 						this.ruleForm.jiabangongzi = d.jiabangongzi != null ? Number(d.jiabangongzi) : 0
 					} else {
+						this.missingAttendanceDates = []
 						this.$message.error((data && data.msg) ? data.msg : '薪资辅助计算失败')
 						this.calcJiabangongzi()
 					}
 					this.calcShifagongzi()
 				}).catch(() => {
+					this.missingAttendanceDates = []
 					this.$message.error('薪资辅助计算请求失败')
 					this.calcJiabangongzi()
 					this.calcShifagongzi()
@@ -742,11 +775,48 @@
 				});
 			},
 
+			async confirmIncompleteAttendanceIfNeeded() {
+				const dates = Array.isArray(this.missingAttendanceDates) ? this.missingAttendanceDates : []
+				if (!dates.length) {
+					return true
+				}
+				const showDates = dates.slice(0, 8).join('、') + (dates.length > 8 ? ` 等${dates.length}天` : '')
+				try {
+					await this.$confirm(
+						`本月存在没有考勤状态的日期：${showDates}。点击确认后，系统会将这些日期默认为未签到并计入扣薪；点击取消则不提交薪资，可先补录考勤后再发放。`,
+						'考勤状态不完整',
+						{
+							confirmButtonText: '确认提交',
+							cancelButtonText: '取消',
+							type: 'warning'
+						}
+					)
+					this.$message.warning('已将没有考勤状态的日期默认为未签到')
+					return true
+				} catch (e) {
+					return false
+				}
+			},
+
 			// 提交
 			async onSubmit() {
 					this.ruleForm.jixiaojiangjin = 0
+					if (this.gangweibutieType === '自定义') {
+						this.ruleForm.gangweibutiexiangmu = String(this.gangweibutieCustomName || '').trim()
+						if (!this.ruleForm.gangweibutiexiangmu) {
+							this.$message.error('自定义补贴项目不能为空')
+							return false
+						}
+					} else {
+						this.ruleForm.gangweibutiexiangmu = this.gangweibutieType
+					}
+					await this.loadSalaryAssistant()
 					this.applyKoukuanPolicy(false)
 					this.calcShifagongzi()
+					const attendanceConfirmed = await this.confirmIncompleteAttendanceIfNeeded()
+					if (!attendanceConfirmed) {
+						return false
+					}
 					if(!this.ruleForm.id) {
 						this.ruleForm.ispay = '未支付'
 					}

@@ -114,6 +114,15 @@ public class ZhiweishensuEntity<T> implements Serializable {
 	 */
 					
 	private String shhf;
+
+	@TableField(exist = false)
+	private String shensuleixing;
+
+	@TableField(exist = false)
+	private String zhiwei;
+
+	@TableField(exist = false)
+	private String xianzhiwei;
 	
 	@JsonFormat(locale="zh", timezone="GMT+8", pattern="yyyy-MM-dd HH:mm:ss")
 	@DateTimeFormat
@@ -251,5 +260,29 @@ public class ZhiweishensuEntity<T> implements Serializable {
 	 */
 	public String getShhf() {
 		return shhf;
+	}
+
+	public String getShensuleixing() {
+		return shensuleixing;
+	}
+
+	public void setShensuleixing(String shensuleixing) {
+		this.shensuleixing = shensuleixing;
+	}
+
+	public String getZhiwei() {
+		return zhiwei;
+	}
+
+	public void setZhiwei(String zhiwei) {
+		this.zhiwei = zhiwei;
+	}
+
+	public String getXianzhiwei() {
+		return xianzhiwei;
+	}
+
+	public void setXianzhiwei(String xianzhiwei) {
+		this.xianzhiwei = xianzhiwei;
 	}
 }

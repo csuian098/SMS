@@ -7,9 +7,13 @@
 				<el-row :style='{"padding":"10px 20px 0","boxShadow":"0 3px 3px 0px #095dac","borderRadius":"0px","flexWrap":"wrap","background":"#fff","display":"flex","width":"100%","position":"relative"}' >
 					<div v-if="isHrPositionMode" :style='{"margin":"0 1% 10px 0","display":"flex"}' class="select" label="姓名" prop="xingming">
 						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">姓名</label>
-						<el-select clearable filterable allow-create default-first-option v-model="searchForm.xingming" placeholder="请选择或输入姓名">
-							<el-option v-for="(item,index) in xingmingOptions" v-bind:key="index" :label="item" :value="item"></el-option>
+						<el-select clearable filterable allow-create default-first-option v-model="searchForm.xingming" placeholder="请选择/输入姓名或工号" @change="hrEmployeeSearchChange" @clear="clearHrEmployeeSearch">
+							<el-option v-for="(item,index) in yuangongOptions" v-bind:key="index" :label="item.label" :value="item.xingming"></el-option>
 						</el-select>
+					</div>
+					<div v-if="isHrPositionMode" :style='{"margin":"0 1% 10px 0","display":"flex"}'>
+						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">工号</label>
+						<el-input v-model="searchForm.gonghao" placeholder="工号" @keydown.enter.native="search()" clearable @clear="clearHrEmployeeSearch"></el-input>
 					</div>
 					<div  :style='{"margin":"0 1% 10px 0","display":"flex"}' class="select" label="现职位" prop="xianzhiwei">
 						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">现职位</label>
@@ -100,13 +104,18 @@
 							{{scope.row.guanlixingming}}
 						</template>
 					</el-table-column>
+					<el-table-column v-if="!isHrPositionMode" label="" width="70" align="center">
+						<template slot-scope="scope">
+							<span v-if="isAppealSubmitted(scope.row)" class="appeal-dot"></span>
+						</template>
+					</el-table-column>
 					<el-table-column width="300" label="操作">
 						<template slot-scope="scope">
 							<el-button class="view" v-if="!isHrPositionMode && isAuth('zhiweidiaodong','查看')" type="success" @click="addOrUpdateHandler(scope.row.id,'info')">
 								<span class="icon iconfont icon-chakan2" :style='{"margin":"0 0px","fontSize":"14px","color":"#333","display":"none","height":"40px"}'></span>
 								详情
 							</el-button>
-							<el-button class="btn8" v-if="!isHrPositionMode && isAuth('zhiweidiaodong','申诉')&&!isAgreeConfirmed(scope.row)" :disabled="isAppealSubmitted(scope.row)" @click="zhiweishensuCrossAddOrUpdateHandler(scope.row,'cross','','','[1]','你已申诉')" type="success">
+							<el-button class="btn8" v-if="!isHrPositionMode && isAuth('zhiweidiaodong','申诉')&&!isAppealSubmitted(scope.row)&&!isAgreeConfirmed(scope.row)" @click="zhiweishensuCrossAddOrUpdateHandler(scope.row,'cross','','','[1]','你已申诉')" type="success">
 								<span class="icon iconfont icon-xihuan" :style='{"margin":"0 0px","fontSize":"14px","color":"#333","display":"none","height":"40px"}'></span>
 								申诉
 							</el-button>
@@ -176,6 +185,7 @@
 			return {
 				indexQueryCondition: '',
 				xingmingOptions: [],
+				yuangongOptions: [],
 				xianzhiweiOptions: [],
 				searchForm: {
 					key: ""
@@ -290,7 +300,7 @@
 				}
 				let state = this.actionButtonsHiddenMap[rowKey];
 				if(state === true) {
-					return { agreeConfirmed: true, appealSubmitted: true };
+					return { agreeConfirmed: true, appealSubmitted: false };
 				}
 				return state || {};
 			},
@@ -299,6 +309,15 @@
 			},
 			isAppealSubmitted(row) {
 				return !!this.getActionButtonState(row).appealSubmitted;
+			},
+			isPositionAppealRecord(record) {
+				if(!record) {
+					return false;
+				}
+				let reason = record.shensuyuanyin || '';
+				return record.shhf !== 'salary_appeal'
+					&& reason.indexOf('工资') === -1
+					&& reason.indexOf('薪资') === -1;
 			},
 			isAgreeHidden(row) {
 				let state = this.getActionButtonState(row);
@@ -309,7 +328,11 @@
 				if(!rowKey) {
 					return;
 				}
-				this.$set(this.actionButtonsHiddenMap, rowKey, { agreeConfirmed: true, appealSubmitted: true });
+				let currentState = this.getActionButtonState(row);
+				this.$set(this.actionButtonsHiddenMap, rowKey, {
+					agreeConfirmed: true,
+					appealSubmitted: !!currentState.appealSubmitted
+				});
 				this.saveActionButtonsHiddenMap();
 			},
 			markAppealSubmitted(row) {
@@ -372,6 +395,24 @@
 			},
 			init () {
 				this.$http({
+					url: `yuangong/page`,
+					method: "get",
+					params: {
+						page: 1,
+						limit: 1000,
+					}
+				}).then(({ data }) => {
+					if (data && data.code === 0 && data.data && data.data.list) {
+						this.yuangongOptions = data.data.list.map(item => ({
+							xingming: item.xingming,
+							gonghao: item.gonghao,
+							label: item.gonghao ? `${item.xingming}（${item.gonghao}）` : item.xingming
+						}));
+					} else {
+						this.$message.error(data.msg);
+					}
+				});
+				this.$http({
 					url: `option/yuangong/xingming`,
 					method: "get"
 				}).then(({ data }) => {
@@ -391,6 +432,17 @@
 						this.$message.error(data.msg);
 					}
 				});
+			},
+			hrEmployeeSearchChange(value) {
+				const item = (this.yuangongOptions || []).find(row => row.xingming === value || row.gonghao === value || row.label === value);
+				if (item) {
+					this.searchForm.xingming = item.xingming;
+					this.searchForm.gonghao = item.gonghao;
+				}
+			},
+			clearHrEmployeeSearch() {
+				this.searchForm.xingming = '';
+				this.searchForm.gonghao = '';
 			},
 			search() {
 				this.pageIndex = 1;
@@ -417,6 +469,9 @@
 				if(this.searchForm.xingming!='' && this.searchForm.xingming!=undefined){
 					params['xingming'] = this.isHrPositionMode ? ('%' + this.searchForm.xingming + '%') : this.searchForm.xingming;
 				}
+				if(this.searchForm.gonghao!='' && this.searchForm.gonghao!=undefined){
+					params['gonghao'] = this.isHrPositionMode ? ('%' + this.searchForm.gonghao + '%') : this.searchForm.gonghao;
+				}
 				if(this.searchForm.xianzhiwei!='' && this.searchForm.xianzhiwei!=undefined){
 					params[this.isHrPositionMode ? 'zhiwei' : 'xianzhiwei'] = this.searchForm.xianzhiwei;
 				}
@@ -432,12 +487,52 @@
 					if (data && data.code === 0) {
 						this.dataList = (data.data && data.data.list) || [];
 						this.totalPage = (data.data && data.data.total) || 0;
+						if(!this.isHrPositionMode) {
+							this.loadTongyiState();
+						}
 					} else {
 						this.dataList = [];
 						this.totalPage = 0;
 					}
 					this.dataListLoading = false;
 				});
+			},
+			async loadTongyiState() {
+				if(!this.dataList || !this.dataList.length) {
+					return;
+				}
+				for (let i = 0; i < this.dataList.length; i++) {
+					let row = this.dataList[i];
+					await this.$http({
+						url: 'tongyixinxi/page',
+						method: 'get',
+						params: {
+							page: 1,
+							limit: 1,
+							gonghao: row.gonghao,
+							crossrefid: row.id
+						}
+					}).then(({ data }) => {
+						if(data && data.code === 0 && data.data && data.data.total > 0) {
+							this.hideActionButtons(row);
+						}
+					});
+					await this.$http({
+						url: 'zhiweishensu/page',
+						method: 'get',
+						params: {
+							page: 1,
+							limit: 20,
+							gonghao: row.gonghao,
+							crossrefid: row.id
+						}
+					}).then(({ data }) => {
+						let records = data && data.code === 0 && data.data ? (data.data.list || []) : [];
+						if(records.some(item => this.isPositionAppealRecord(item))) {
+							this.markAppealSubmitted(row);
+						}
+					});
+				}
 			},
 			// 姣忛〉鏁?
 			sizeChangeHandle(val) {
@@ -819,6 +914,17 @@
 	
 	.el-table /deep/ .el-table__body-wrapper tbody tr td .btn8:hover {
 		opacity: 0.8;
+	}
+
+	.el-table /deep/ .el-table__body-wrapper tbody tr td .appeal-dot {
+		display: inline-block;
+		width: 10px;
+		height: 10px;
+		margin: 0;
+		border-radius: 50%;
+		background: #f56c6c;
+		box-shadow: 0 0 0 2px rgba(245, 108, 108, .18);
+		vertical-align: middle;
 	}
 	
 	// pagination

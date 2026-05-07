@@ -54,7 +54,7 @@
 						<span class="icon iconfont icon-shenhe9" :style='{"margin":"0 0px","fontSize":"16px","color":"#206db5","height":"auto"}'></span>
 						支付
 					</el-button>
-					<el-button class="del" v-if="isAuth('yuangongxinzi','删除')" :disabled="dataListSelections.length?false:true" type="danger" @click="deleteHandler()">
+					<el-button class="del" v-if="tablename!='yuangong' && isAuth('yuangongxinzi','删除')" :disabled="dataListSelections.length?false:true" type="danger" @click="deleteHandler()">
 						<span class="icon iconfont icon-shanchu6" :style='{"margin":"0 0px","fontSize":"16px","color":"#f00","height":"auto"}'></span>
 						删除
 					</el-button>
@@ -70,107 +70,107 @@
 					:data="dataList"
 					v-loading="dataListLoading"
 					@selection-change="selectionChangeHandler">
-					<el-table-column :resizable='true' type="selection" align="center" width="50" :selectable="salarySelectionSelectable"></el-table-column>
-					<el-table-column :resizable='true' :sortable='true' label="序号" type="index" width="50" />
+					<el-table-column :resizable='true' type="selection" align="center" width="34" :selectable="salarySelectionSelectable"></el-table-column>
+					<el-table-column :resizable='true' :sortable='true' label="序号" type="index" width="42" />
 					<el-table-column :resizable='true' :sortable='true'
 												prop="xingming"
-						label="姓名">
+						label="姓名" width="64">
 						<template slot-scope="scope">
 							{{scope.row.xingming}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="gonghao"
-						label="工号">
+						label="工号" width="72">
 						<template slot-scope="scope">
 							{{scope.row.gonghao}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="qingjiatianshu"
-						label="请假天数">
+						label="请假天数" width="72">
 						<template slot-scope="scope">
 							{{scope.row.qingjiatianshu}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="weiqiandaotianshu"
-						label="未签到天数">
+						label="未签到天数" width="78">
 						<template slot-scope="scope">
 							{{scope.row.weiqiandaotianshu}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="weiqiandaokouxin"
-						label="未签到扣薪">
+						label="未签到扣薪" width="82">
 						<template slot-scope="scope">
 							{{scope.row.weiqiandaokouxin}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="jiaqikouxin"
-						label="假期扣薪">
+						label="假期扣薪" width="76">
 						<template slot-scope="scope">
 							{{scope.row.jiaqikouxin}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="jibengongzi"
-						label="基本工资">
+						label="基本工资" width="76">
 						<template slot-scope="scope">
 							{{scope.row.jibengongzi}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="jiabangongzi"
-						label="加班工资">
+						label="加班工资" width="76">
 						<template slot-scope="scope">
 							{{scope.row.jiabangongzi}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="koukuanjine"
-						label="扣款金额">
+						label="扣款金额" width="76">
 						<template slot-scope="scope">
 							{{scope.row.koukuanjine}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="shifagongzi"
-						label="实发工资">
+						label="实发工资" width="76">
 						<template slot-scope="scope">
 							{{scope.row.shifagongzi}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="koukuanyuanyin"
-						label="扣款原因">
+						label="扣款原因" width="86">
 						<template slot-scope="scope">
 							{{scope.row.koukuanyuanyin}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="dengjiriqi"
-						label="登记日期">
+						label="登记日期" width="94">
 						<template slot-scope="scope">
 							{{scope.row.dengjiriqi}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="guanlizhanghao"
-						label="管理账号">
+						label="管理账号" width="72">
 						<template slot-scope="scope">
 							{{scope.row.guanlizhanghao}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
 												prop="guanlixingming"
-						label="管理姓名">
+						label="管理姓名" width="72">
 						<template slot-scope="scope">
 							{{scope.row.guanlixingming}}
 						</template>
 					</el-table-column>
-					<el-table-column :resizable='true' :sortable='true' prop="sfsh" label="审核状态">
+					<el-table-column :resizable='true' :sortable='true' prop="sfsh" label="审核状态" width="76">
 						<template slot-scope="scope">
 							<el-tag v-if="scope.row.sfsh=='否'" type="danger">未通过</el-tag>
 							<el-tag v-else-if="scope.row.sfsh=='待审核'" type="warning">待审核</el-tag>
@@ -178,7 +178,7 @@
 							<span v-else>{{ scope.row.sfsh }}</span>
 						</template>
 					</el-table-column>
-					<el-table-column :resizable='true' :sortable='true' prop="ispay" label="支付状态">
+					<el-table-column :resizable='true' :sortable='true' prop="ispay" label="支付状态" width="76">
 						<template slot-scope="scope">
 							<el-tag v-if="scope.row.ispay=='已支付'" type="success">已支付</el-tag>
 							<el-tag v-else-if="scope.row.ispay=='未支付'" type="warning">未支付</el-tag>
@@ -186,29 +186,33 @@
 							<span v-else>{{ scope.row.ispay || '未支付' }}</span>
 						</template>
 					</el-table-column>
-					<el-table-column width="360" label="操作">
+					<el-table-column width="142" label="操作">
 						<template slot-scope="scope">
 							<el-button class="view" v-if="true" type="success" @click="addOrUpdateHandler(scope.row.id,'info')">
 								<span class="icon iconfont icon-chakan2" :style='{"margin":"0 0px","fontSize":"14px","color":"#333","display":"none","height":"40px"}'></span>
 								详情
 							</el-button>
-							<el-button class="edit" v-if="!isSalaryAgreed(scope.row) && canModifySalary(scope.row)" type="success" @click="addOrUpdateHandler(scope.row.id)">
+							<el-button class="edit" v-if="!isSalaryAgreed(scope.row) && canShowModifySalary(scope.row)" :disabled="isSalaryModifyLocked(scope.row) || !canModifySalary(scope.row)" type="success" @click="addOrUpdateHandler(scope.row.id)">
 								<span class="icon iconfont icon-xiugai13" :style='{"margin":"0 0px","fontSize":"14px","color":"rgba(255, 140, 0, 1)","display":"none","height":"40px"}'></span>
 								修改
 							</el-button>
-							<el-button class="btn8" v-if="!isSalaryAgreed(scope.row) && ['人事管理员'].includes(role) && isAuth('yuangongxinzi','支付')" :disabled="isPayLocked(scope.row)" type="success" @click="payBatchDialog(scope.row)">
+							<el-button class="btn8" v-if="showSalaryPayButton(scope.row) && canPaySalary(scope.row)" type="success" @click="payBatchDialog(scope.row)">
 								<span class="icon iconfont icon-zhuanfa13" :style='{"margin":"0 0px","fontSize":"14px","color":"#db9663","display":"none","height":"40px"}'></span>
 								支付
 							</el-button>
-							<el-button class="btn8" v-if="tablename=='yuangong' && !isSalaryAgreed(scope.row)" @click="zhiweishensuCrossAddOrUpdateHandler(scope.row,'cross','','')" type="success">
+							<el-button class="btn8" v-if="showSalaryPayButton(scope.row) && !canPaySalary(scope.row)" type="success" @click="showUnavailablePayMessage()">
+								<span class="icon iconfont icon-zhuanfa13" :style='{"margin":"0 0px","fontSize":"14px","color":"#db9663","display":"none","height":"40px"}'></span>
+								支付
+							</el-button>
+							<el-button class="btn8" v-if="canEmployeeRespondSalary(scope.row)" @click="zhiweishensuCrossAddOrUpdateHandler(scope.row,'cross','','')" type="success">
 								<span class="icon iconfont icon-zhuanfa13" :style='{"margin":"0 0px","fontSize":"14px","color":"#db9663","display":"none","height":"40px"}'></span>
 								申诉
 							</el-button>
-							<el-button class="btn8" v-if="tablename=='yuangong' && !isSalaryAgreed(scope.row)" @click="salaryTongyiHandler(scope.row)" type="success">
+							<el-button class="btn8" v-if="canEmployeeRespondSalary(scope.row)" @click="salaryTongyiHandler(scope.row)" type="success">
 								<span class="icon iconfont icon-zhuanfa13" :style='{"margin":"0 0px","fontSize":"14px","color":"#db9663","display":"none","height":"40px"}'></span>
 								同意
 							</el-button>
-							<el-button class="del" v-if="!isSalaryAgreed(scope.row) && isAuth('yuangongxinzi','删除')" type="primary" @click="deleteHandler(scope.row.id)">
+							<el-button class="del" v-if="tablename!='yuangong' && !isSalaryAgreed(scope.row) && isAuth('yuangongxinzi','删除')" type="primary" @click="deleteHandler(scope.row.id)">
 								<span class="icon iconfont icon-shanchu6" :style='{"margin":"0 0px","fontSize":"14px","color":"rgba(220, 38, 38, 1)","display":"none","height":"40px"}'></span>
 								删除
 							</el-button>
@@ -408,16 +412,50 @@
 				this.getDataList()
 			},
 			canModifySalary(row) {
-				if (!row || (row.sfsh && row.sfsh !== '待审核' && row.sfsh !== '否')) {
+				if (!row || this.isSalaryModifyLocked(row) || (row.sfsh && row.sfsh !== '待审核' && row.sfsh !== '否')) {
 					return false;
 				}
 				return this.isAuth('yuangongxinzi','修改') || this.tablename === 'renshiguanliyuan';
+			},
+			canShowModifySalary(row) {
+				if (!row) {
+					return false;
+				}
+				if (!this.isAuth('yuangongxinzi','修改') && this.tablename !== 'renshiguanliyuan') {
+					return false;
+				}
+				return this.isPayLocked(row) || this.canModifySalary(row);
+			},
+			isSalaryModifyLocked(row) {
+				return !!(row && row.ispay === '申诉锁定' && row.sfsh !== '否');
+			},
+			canPaySalary(row) {
+				return !!(row && row.sfsh === '是' && row.ispay !== '已支付' && !this.isPayLocked(row));
+			},
+			showSalaryPayButton(row) {
+				return !!(!this.isSalaryAgreed(row)
+					&& ['人事管理员'].includes(this.role)
+					&& this.isAuth('yuangongxinzi','支付')
+					&& row
+					&& row.ispay !== '已支付');
+			},
+			showUnavailablePayMessage() {
+				this.$message.warning('该薪资尚未审核通过或处于申诉锁定状态，暂时不能支付');
+			},
+			hasOnlyPayableSelections() {
+				return this.dataListSelections.length > 0 && this.dataListSelections.every(row => this.canPaySalary(row));
 			},
 			isSalaryAgreed(row) {
 				if (this.tablename !== 'yuangong' || !row || !row.id) {
 					return false;
 				}
 				return row._salaryAgreed || this.agreedSalaryIds.indexOf(String(row.id)) >= 0;
+			},
+			isSalaryAppealed(row) {
+				return !!(row && row.ispay === '申诉锁定');
+			},
+			canEmployeeRespondSalary(row) {
+				return this.tablename === 'yuangong' && !this.isSalaryAgreed(row) && !this.isSalaryAppealed(row);
 			},
 			salarySelectionSelectable(row) {
 				return !this.isSalaryAgreed(row);
@@ -660,19 +698,24 @@
 						continue;
 					}
 					if (this.isPayLocked(current)) {
-						this.$message.error('存在申诉中的数据，暂不能支付');
+						this.showUnavailablePayMessage();
 						this.payBatchIds = [];
 						return false;
 					}
 					if (current.sfsh !== '是') {
-						this.$message.error('存在未审核通过的数据，不能继续支付');
+						this.showUnavailablePayMessage();
+						this.payBatchIds = [];
+						return false;
+					}
+					if (current.ispay === '已支付') {
+						this.$message.warning('该薪资已支付，无需重复支付');
 						this.payBatchIds = [];
 						return false;
 					}
 					this.payBatchIds.push(current.id);
 				}
 				if (!this.payBatchIds.length) {
-					this.$message.error('请选择要支付的数据');
+					this.$message.error('请先选择需要支付的薪资记录');
 					return false;
 				}
 				this.payBatchForm.ispay = '';
@@ -681,7 +724,7 @@
 			payBatchHandler() {
 				this.$refs['payBatchForm'].validate(valid => {
 					if (valid) {
-						this.$confirm(`是否${this.payBatchIds.length > 1 ? '批量设置' : '设置'}支付状态？`, '提示', {
+						this.$confirm('确认更新选中薪资记录的支付状态吗？', '提示', {
 							confirmButtonText: '确定',
 							cancelButtonText: '取消',
 							type: 'warning'
@@ -754,7 +797,7 @@
 				for (let x in this.dataListSelections) {
 					const row = this.dataListSelections[x];
 					if (row.sfsh && row.sfsh !== '待审核') {
-						this.$message.error('存在已审核数据，不能继续操作');
+						this.$message.error('选中记录中存在已审核薪资，不能重复审核');
 						this.batchIds = [];
 						return false;
 					}
@@ -834,7 +877,7 @@
 						}
 					});
 					if (existed) {
-						this.$message.warning('该薪资记录已同意，请勿重复操作');
+						this.$message.warning('该薪资记录已确认，无需重复操作');
 						return;
 					}
 					await this.$http({
@@ -1103,28 +1146,55 @@
 		text-align: left;
 	}
 
+	.el-table /deep/ .el-table__body-wrapper,
+	.el-table /deep/ .el-table__header-wrapper {
+		overflow-x: hidden;
+	}
+
+	.el-table /deep/ .el-table__body,
+	.el-table /deep/ .el-table__header {
+		width: 100% !important;
+	}
+
+	.el-table /deep/ .el-table__body-wrapper::-webkit-scrollbar {
+		height: 0;
+	}
+
 	.el-table /deep/ .el-table__body-wrapper tbody tr td .cell {
-		padding: 0 0 0 5px;
+		padding: 0 2px;
 		overflow: hidden;
-		word-break: break-all;
-		white-space: normal;
-		font-size: inherit;
-		line-height: 24px;
+		word-break: keep-all;
+		white-space: nowrap;
+		font-size: 12px;
+		line-height: 22px;
 		text-overflow: ellipsis;
+	}
+
+	.el-table /deep/ .el-table__header-wrapper thead tr th .cell {
+		padding: 0 2px;
+		white-space: nowrap;
+		font-size: 12px;
+		line-height: 22px;
+	}
+
+	.el-table /deep/ .el-tag {
+		height: 26px;
+		line-height: 24px;
+		padding: 0 6px;
 	}
 	
 	.el-table /deep/ .el-table__body-wrapper tbody tr td .view {
 		border: 1px solid #216db4;
 		cursor: pointer;
 		border-radius: 6px;
-		padding: 0 10px;
-		margin: 0 5px 5px 0;
+		padding: 0 7px;
+		margin: 0 3px 4px 0;
 		outline: none;
 		color: #216db4;
 		background: none;
 		width: auto;
-		font-size: 14px;
-		height: 32px;
+		font-size: 13px;
+		height: 30px;
 		order: 3;
 	}
 	
@@ -1142,33 +1212,42 @@
 		border: 1px solid #22c08e;
 		cursor: pointer;
 		border-radius: 6px;
-		padding: 0 10px;
-		margin: 0 5px 5px 0;
+		padding: 0 7px;
+		margin: 0 3px 4px 0;
 		outline: none;
 		color: #22c08e;
 		background: none;
 		width: auto;
-		font-size: 14px;
-		height: 32px;
+		font-size: 13px;
+		height: 30px;
 		order: -1;
 	}
 	
 	.el-table /deep/ .el-table__body-wrapper tbody tr td .edit:hover {
 		opacity: 0.8;
 	}
+
+	.el-table /deep/ .el-table__body-wrapper tbody tr td .edit.is-disabled,
+	.el-table /deep/ .el-table__body-wrapper tbody tr td .edit.is-disabled:hover {
+		border-color: #c0c4cc;
+		cursor: not-allowed;
+		color: #909399;
+		background: #f5f7fa;
+		opacity: 1;
+	}
 	
 	.el-table /deep/ .el-table__body-wrapper tbody tr td .del {
 		border: 1px solid #e7606a;
 		cursor: pointer;
 		border-radius: 6px;
-		padding: 0 10px;
-		margin: 0 5px 5px 0;
+		padding: 0 7px;
+		margin: 0 3px 4px 0;
 		outline: none;
 		color: #e7606a;
 		background: none;
 		width: auto;
-		font-size: 14px;
-		height: 32px;
+		font-size: 13px;
+		height: 30px;
 	}
 	
 	.el-table /deep/ .el-table__body-wrapper tbody tr td .del:hover {
@@ -1179,14 +1258,14 @@
 		border: 1px solid #70a0fa;
 		cursor: pointer;
 		border-radius: 6px;
-		padding: 0 10px;
-		margin: 0 5px 5px 0;
+		padding: 0 7px;
+		margin: 0 3px 4px 0;
 		outline: none;
 		color: #4484f9;
 		background: none;
 		width: auto;
-		font-size: 14px;
-		height: 32px;
+		font-size: 13px;
+		height: 30px;
 		order: 5;
 	}
 	
@@ -1589,3 +1668,4 @@
 		}
 	}
 </style>
+

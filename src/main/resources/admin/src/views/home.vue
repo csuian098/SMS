@@ -6,7 +6,7 @@
 				<div class="welcome-line2">{{ this.$project.projectName }}</div>
 			</div>
 		</div>
-		<div class="statis-box">
+		<div class="statis-box" :class="{'statis-box-admin': isAdminHome}">
 			<div id="statis1" class="statis1 animate__animated" v-if="isHomeVisible('yuangong','首页总数')">
 				<div class="left"><span class="icon iconfont icon-liulan12"></span></div>
 				<div class="right">
@@ -26,6 +26,13 @@
 				<div class="right">
 					<div class="num">{{yuangongxinziCount}}</div>
 					<div class="name">员工薪资总数</div>
+				</div>
+			</div>
+			<div id="statis4" class="statis4 animate__animated" v-if="isAdminHome" @click="goReminder('/yuangongxinzi')">
+				<div class="left"><span class="icon iconfont icon-shuju17"></span></div>
+				<div class="right">
+					<div class="num">{{adminSalaryPendingCount}}</div>
+					<div class="name">薪资待审核</div>
 				</div>
 			</div>
 		</div>
@@ -81,6 +88,7 @@ export default {
 			yuangongCount: 0,
 			renshiguanliyuanCount: 0,
 			yuangongxinziCount: 0,
+			adminSalaryPendingCount: 0,
 			/** 棣栭〉钖祫鍖猴細姹囨€绘寚鏍囪〃 */
 			xinziStatRows: [],
 			salaryHistogramChartInst: null,
@@ -137,6 +145,11 @@ export default {
 	computed: {
 		sessionForm() {
 			return JSON.parse(this.$storage.getObj('userForm'))
+		},
+		isAdminHome() {
+			const role = this.$storage.get('role')
+			const table = this.$storage.get('sessionTable')
+			return table === 'users' || role === '管理员' || role === 'admin'
 		},
 		avatar(){
 			return this.$storage.get('headportrait')?this.$storage.get('headportrait'):''
@@ -234,10 +247,13 @@ export default {
 			const table = this.$storage.get('sessionTable')
 			const role = this.$storage.get('role')
 			const cards = []
+			this.adminSalaryPendingCount = 0
 			try {
 				if (table === 'yuangong') {
 					const salaryConfirmCount = await this.getEmployeeSalaryConfirmCount()
 					const appealPendingCount = await this.getPageTotal('zhiweishensu/page', { sfsh: '待审核' })
+					const gonghao = (this.sessionUserProfile && this.sessionUserProfile.gonghao) || this.$storage.get('adminName') || ''
+					const leavePendingCount = await this.getPageTotal('qingjiashenqing/page', { gonghao, sfsh: '待审核' })
 					cards.push({
 						key: 'employee-salary-confirm',
 						title: '薪资待确认',
@@ -252,6 +268,13 @@ export default {
 						count: appealPendingCount,
 						path: '/zhiweishensu'
 					})
+					cards.push({
+						key: 'employee-leave-pending',
+						title: '请假待处理',
+						desc: leavePendingCount > 0 ? `有 ${leavePendingCount} 条请假申请待处理` : '暂无请假申请需要处理',
+						count: leavePendingCount,
+						path: '/qingjiashenqing'
+					})
 				} else if (table === 'renshiguanliyuan') {
 					const leavePendingCount = await this.getPageTotal('qingjiashenqing/page', { sfsh: '待审核' })
 					const appealPendingCount = await this.getPageTotal('zhiweishensu/page', { sfsh: '待审核' })
@@ -263,11 +286,7 @@ export default {
 					cards.push({ key: 'hr-salary-pay', title: '工资待支付', desc: `有 ${salaryPayCount} 条薪资信息待支付`, count: salaryPayCount, path: '/yuangongxinzi' })
 				} else if (table === 'users' || role === '管理员' || role === 'admin') {
 					const salaryPendingCount = await this.getPageTotal('yuangongxinzi/page', { sfsh: '待审核' })
-					const appealPendingCount = await this.getPageTotal('zhiweishensu/page', { sfsh: '待审核' })
-					const salaryPayCount = await this.getPageTotal('yuangongxinzi/page', { sfsh: '是', ispay: '未支付' })
-					cards.push({ key: 'admin-salary-pending', title: '薪资待审核', desc: `有 ${salaryPendingCount} 条薪资信息待审核`, count: salaryPendingCount, path: '/yuangongxinzi' })
-					cards.push({ key: 'admin-appeal-pending', title: '申诉待处理', desc: `有 ${appealPendingCount} 条申诉信息待处理`, count: appealPendingCount, path: '/zhiweishensu' })
-					cards.push({ key: 'admin-salary-pay', title: '工资待支付', desc: `有 ${salaryPayCount} 条薪资信息待支付`, count: salaryPayCount, path: '/yuangongxinzi' })
+					this.adminSalaryPendingCount = salaryPendingCount
 				}
 				this.reminderCards = cards
 			} catch (e) {
@@ -799,6 +818,18 @@ export default {
 			justify-content: center;
 			align-items: center;
 			flex-wrap: wrap;
+			&.statis-box-admin {
+				justify-content: space-between;
+				.statis1,
+				.statis2,
+				.statis3,
+				.statis4 {
+					width: calc(25% - 20px);
+				}
+				.statis4 {
+					cursor: pointer;
+				}
+			}
 			.statis1 {
 				border: 1px solid #e5f0f9;
 				border-radius: 0px;

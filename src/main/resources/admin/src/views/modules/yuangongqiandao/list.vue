@@ -11,7 +11,9 @@
 					</div>
 					<div :style='{"margin":"0 1% 10px 0","display":"flex"}'>
 						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">姓名</label>
-						<el-input v-model="searchForm.xingming" placeholder="姓名" clearable></el-input>
+						<el-select clearable filterable v-model="selectedEmployeeKey" placeholder="请选择姓名" @change="onEmployeeSelect" @clear="clearEmployeeSelect">
+							<el-option v-for="item in employeeOptions" :key="item.gonghao" :label="item.xingming + '（' + item.gonghao + '）'" :value="item.gonghao"></el-option>
+						</el-select>
 					</div>
 					<div :style='{"margin":"0 1% 10px 0","display":"flex","alignItems":"center"}'>
 						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">月份</label>
@@ -185,6 +187,8 @@
 				searchForm: {
 					key: ""
 				},
+				selectedEmployeeKey: '',
+				employeeOptions: [],
 				form:{},
 				dataList: [],
 				pageIndex: 1,
@@ -222,6 +226,7 @@
 				return false
 			}
 			this.init();
+			this.loadEmployeeOptions();
 			this.getDataList();
 		},
 		mounted() {
@@ -294,7 +299,7 @@
 						} else if (mv === 'sign_ot' || mv === 'sign') {
 							markType = mv
 						} else {
-							markType = isRestDay || (this.calendarHasMonthData && this.isClosedAttendanceDay(ds)) ? 'none' : 'idle'
+							markType = isRestDay || (this.calendarHasMonthData && this.isClosedAttendanceDay(ds) && ds < '2026-04-30') ? 'none' : 'idle'
 						}
 					}
 					cells.push({
@@ -330,6 +335,9 @@
 			activeSignDateStr() {
 				if (this.demoSignTime && /^\d{4}-\d{2}-\d{2}/.test(this.demoSignTime)) {
 					return this.demoSignTime.substring(0, 10)
+				}
+				if (this.selectedDate) {
+					return this.selectedDate
 				}
 				const d = new Date()
 				const p = n => (n < 10 ? '0' : '') + n
@@ -387,6 +395,39 @@
 			},
 			init () {
 			},
+			loadEmployeeOptions() {
+				if (!this.queryChange(['人事管理员', '管理员'])) {
+					return;
+				}
+				this.$http({
+					url: 'yuangong/page',
+					method: 'get',
+					params: {
+						page: 1,
+						limit: 1000,
+						sort: 'gonghao',
+						order: 'asc'
+					}
+				}).then(({ data }) => {
+					if (data && data.code === 0 && data.data) {
+						this.employeeOptions = (data.data.list || []).map(item => ({
+							gonghao: item.gonghao || '',
+							xingming: item.xingming || ''
+						})).filter(item => item.gonghao && item.xingming);
+					}
+				});
+			},
+			onEmployeeSelect(gonghao) {
+				const item = this.employeeOptions.find(emp => emp.gonghao === gonghao);
+				if (item) {
+					this.searchForm.gonghao = item.gonghao;
+					this.searchForm.xingming = item.xingming;
+				}
+			},
+			clearEmployeeSelect() {
+				this.searchForm.gonghao = '';
+				this.searchForm.xingming = '';
+			},
 			search() {
 				this.pageIndex = 1;
 				this.selectedDate = null;
@@ -413,6 +454,7 @@
 				this.selectedDate = this.selectedDate === c.dateStr ? null : c.dateStr;
 				this.pageIndex = 1;
 				this.getDataList();
+				this.loadTodaySignState();
 			},
 			onCalendarMonthChange() {
 				this.selectedDate = null;
@@ -420,12 +462,25 @@
 				this.getDataList();
 			},
 			canQuickSign(type) {
+				const activeCell = this.getActiveCalendarCell()
 				const s = this.todaySignState || {}
+				const isOvertimeEnd = String(type).indexOf('加班结束') >= 0 || String(type).indexOf('鍔犵彮缁撴潫') >= 0
+				if (activeCell) {
+					if (activeCell.markType === 'sign_ot') {
+						return isOvertimeEnd && s.hasOvertimeStart && !s.hasOvertimeEnd
+					}
+					const closedTypes = ['leave', 'none']
+					if (closedTypes.indexOf(activeCell.markType) >= 0) return false
+				}
 				if (this.isSignInType(type)) return !s.hasSignIn && !s.hasSignOut && !s.hasOvertimeStart && !s.hasOvertimeEnd
 				if (this.isSignOutType(type)) return s.hasSignIn && !s.hasSignOut && !s.hasOvertimeStart && !s.hasOvertimeEnd
 				if (String(type).indexOf('加班开始') >= 0 || String(type).indexOf('鍔犵彮寮€濮') >= 0) return s.hasSignIn && s.hasSignOut && !s.hasOvertimeStart && !s.hasOvertimeEnd
-				if (String(type).indexOf('加班结束') >= 0 || String(type).indexOf('鍔犵彮缁撴潫') >= 0) return s.hasOvertimeStart && !s.hasOvertimeEnd
+				if (isOvertimeEnd) return s.hasOvertimeStart && !s.hasOvertimeEnd
 				return false
+			},
+			getActiveCalendarCell() {
+				const day = this.activeSignDateStr()
+				return (this.calendarCells || []).find(item => !item.pad && item.dateStr === day) || null
 			},
 			loadTodaySignState() {
 				if (this.tablename !== 'yuangong') return
@@ -622,12 +677,19 @@
 								const localDs = d => `${d.getFullYear()}-${lpad(d.getMonth()+1)}-${lpad(d.getDate())}`
 								ld.data.list.forEach(row => {
 									const s = row.qingjiashijian ? String(row.qingjiashijian).substring(0, 10) : null
-									const e = row.jieshushijian ? String(row.jieshushijian).substring(0, 10) : s
 									if (!s) return
 									const [sy, sm, sd] = s.split('-').map(Number)
-									const [ey, em, ed] = (e || s).split('-').map(Number)
 									let cur = new Date(sy, sm - 1, sd)
-									const endD = new Date(ey, em - 1, ed)
+									const leaveDays = Math.max(0, Math.ceil(Number(row.qingjiatianshu) || 0))
+									let endD = null
+									if (leaveDays > 0) {
+										endD = new Date(sy, sm - 1, sd)
+										endD.setDate(endD.getDate() + leaveDays - 1)
+									} else {
+										const e = row.jieshushijian ? String(row.jieshushijian).substring(0, 10) : s
+										const [ey, em, ed] = (e || s).split('-').map(Number)
+										endD = new Date(ey, em - 1, ed)
+									}
 									while (cur <= endD) {
 										const ds = localDs(cur)
 										map[ds] = 'leave'

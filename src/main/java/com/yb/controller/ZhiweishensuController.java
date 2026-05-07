@@ -31,8 +31,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 鑱屼綅鐢宠瘔
@@ -63,7 +65,9 @@ public class ZhiweishensuController {
         }
 
         QueryWrapper<ZhiweishensuEntity> ew = new QueryWrapper<>();
+        applyAppealTypeCondition(ew, params.get("shensuleixing"));
         PageUtils page = zhiweishensuService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zhiweishensu), params), params));
+        enrichAppealRows(page.getList());
         DeSensUtil.desensitize(page, new HashMap<>());
         return R.ok().put("data", page);
     }
@@ -76,6 +80,7 @@ public class ZhiweishensuController {
                   @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date shensuriqiend,
                   HttpServletRequest request) {
         QueryWrapper<ZhiweishensuEntity> ew = new QueryWrapper<>();
+        applyAppealTypeCondition(ew, params.get("shensuleixing"));
         if (shensuriqistart != null) {
             ew.ge("shensuriqi", shensuriqistart);
         }
@@ -84,6 +89,7 @@ public class ZhiweishensuController {
         }
 
         PageUtils page = zhiweishensuService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, zhiweishensu), params), params));
+        enrichAppealRows(page.getList());
         DeSensUtil.desensitize(page, new HashMap<>());
         return R.ok().put("data", page);
     }
@@ -106,6 +112,7 @@ public class ZhiweishensuController {
     @RequestMapping("/info/{id}")
     public R info(@PathVariable("id") Long id) {
         ZhiweishensuEntity zhiweishensu = zhiweishensuService.getById(id);
+        enrichAppealRow(zhiweishensu);
         DeSensUtil.desensitize(zhiweishensu, new HashMap<>());
         return R.ok().put("data", zhiweishensu);
     }
@@ -114,6 +121,7 @@ public class ZhiweishensuController {
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id) {
         ZhiweishensuEntity zhiweishensu = zhiweishensuService.getById(id);
+        enrichAppealRow(zhiweishensu);
         DeSensUtil.desensitize(zhiweishensu, new HashMap<>());
         return R.ok().put("data", zhiweishensu);
     }
@@ -148,6 +156,7 @@ public class ZhiweishensuController {
                     @RequestParam(required = false, defaultValue = "") String shhf) {
         List<ZhiweishensuEntity> list = new ArrayList<>();
         Map<Long, YuangongxinziEntity> resetSalaryMap = new HashMap<>();
+        Set<String> positionAppealGonghaos = new HashSet<>();
 
         for (Long id : ids) {
             ZhiweishensuEntity zhiweishensu = zhiweishensuService.getById(id);
@@ -155,9 +164,7 @@ public class ZhiweishensuController {
                 continue;
             }
 
-            boolean isSalaryAppeal = "salary_appeal".equals(zhiweishensu.getShhf())
-                    || StringUtils.contains(StringUtils.defaultString(zhiweishensu.getShensuyuanyin()), "宸ヨ祫")
-                    || StringUtils.contains(StringUtils.defaultString(zhiweishensu.getShensuyuanyin()), "钖祫");
+            boolean isSalaryAppeal = isSalaryAppeal(zhiweishensu);
 
             YuangongxinziEntity salary = null;
             if (zhiweishensu.getCrossrefid() != null) {
@@ -190,8 +197,8 @@ public class ZhiweishensuController {
                 resetSalaryMap.put(salary.getId(), salary);
             }
 
-            if (!isSalaryAppeal && isApproved(sfsh) && zhiweishensu.getCrossrefid() != null) {
-                restoreOriginalPosition(zhiweishensu);
+            if (!isSalaryAppeal && StringUtils.isNotBlank(zhiweishensu.getGonghao())) {
+                positionAppealGonghaos.add(zhiweishensu.getGonghao());
             }
 
             zhiweishensu.setSfsh(sfsh);
@@ -205,6 +212,9 @@ public class ZhiweishensuController {
         if (!resetSalaryMap.isEmpty()) {
             yuangongxinziService.updateBatchById(new ArrayList<>(resetSalaryMap.values()));
         }
+        for (String gonghao : positionAppealGonghaos) {
+            recomputeEmployeePosition(gonghao);
+        }
 
         return R.ok();
     }
@@ -213,19 +223,116 @@ public class ZhiweishensuController {
         return "是".equals(sfsh) || "鏄?".equals(sfsh);
     }
 
-    private void restoreOriginalPosition(ZhiweishensuEntity zhiweishensu) {
+    private void applyAppealTypeCondition(QueryWrapper<ZhiweishensuEntity> ew, Object shensuleixingObj) {
+        String shensuleixing = shensuleixingObj == null ? "" : StringUtils.trimToEmpty(String.valueOf(shensuleixingObj));
+        if (StringUtils.isBlank(shensuleixing)) {
+            return;
+        }
+        if ("薪资异议".equals(shensuleixing)) {
+            ew.and(wrapper -> wrapper.eq("shhf", "salary_appeal")
+                    .or().like("shensuyuanyin", "工资")
+                    .or().like("shensuyuanyin", "薪资")
+                    .or().like("shensuyuanyin", "宸ヨ祫")
+                    .or().like("shensuyuanyin", "钖祫"));
+            return;
+        }
+        if ("职位异议".equals(shensuleixing)) {
+            ew.and(wrapper -> wrapper.isNull("shhf").or().ne("shhf", "salary_appeal"));
+            ew.and(wrapper -> wrapper.isNull("shensuyuanyin")
+                    .or(condition -> condition.notLike("shensuyuanyin", "工资")
+                            .notLike("shensuyuanyin", "薪资")
+                            .notLike("shensuyuanyin", "宸ヨ祫")
+                            .notLike("shensuyuanyin", "钖祫")));
+        }
+    }
+
+    private void enrichAppealRows(List<?> rows) {
+        if (rows == null || rows.isEmpty()) {
+            return;
+        }
+        for (Object row : rows) {
+            if (row instanceof ZhiweishensuEntity) {
+                enrichAppealRow((ZhiweishensuEntity) row);
+            }
+        }
+    }
+
+    private void enrichAppealRow(ZhiweishensuEntity zhiweishensu) {
+        if (zhiweishensu == null) {
+            return;
+        }
+        if (isSalaryAppeal(zhiweishensu)) {
+            zhiweishensu.setShensuleixing("薪资异议");
+            return;
+        }
+        zhiweishensu.setShensuleixing("职位异议");
+        if (zhiweishensu.getCrossrefid() == null) {
+            return;
+        }
         ZhiweidiaodongEntity diaodong = zhiweidiaodongService.getById(zhiweishensu.getCrossrefid());
-        if (diaodong == null || StringUtils.isBlank(diaodong.getGonghao()) || StringUtils.isBlank(diaodong.getZhiwei())) {
+        if (diaodong == null) {
+            return;
+        }
+        zhiweishensu.setZhiwei(diaodong.getZhiwei());
+        zhiweishensu.setXianzhiwei(diaodong.getXianzhiwei());
+    }
+
+    private boolean isSalaryAppeal(ZhiweishensuEntity zhiweishensu) {
+        if (zhiweishensu == null) {
+            return false;
+        }
+        String reason = StringUtils.defaultString(zhiweishensu.getShensuyuanyin());
+        return "salary_appeal".equals(zhiweishensu.getShhf())
+                || StringUtils.contains(reason, "工资")
+                || StringUtils.contains(reason, "薪资")
+                || StringUtils.contains(reason, "宸ヨ祫")
+                || StringUtils.contains(reason, "钖祫");
+    }
+
+    private void recomputeEmployeePosition(String gonghao) {
+        if (StringUtils.isBlank(gonghao)) {
+            return;
+        }
+        ZhiweidiaodongEntity latest = zhiweidiaodongService.getOne(
+                new QueryWrapper<ZhiweidiaodongEntity>()
+                        .eq("gonghao", gonghao)
+                        .orderByDesc("biandongriqi")
+                        .orderByDesc("id")
+                        .last("limit 1"),
+                false
+        );
+        if (latest == null) {
+            return;
+        }
+        String finalPosition = latest.getXianzhiwei();
+        ZhiweishensuEntity appeal = zhiweishensuService.getOne(
+                new QueryWrapper<ZhiweishensuEntity>()
+                        .eq("gonghao", gonghao)
+                        .eq("crossrefid", latest.getId())
+                        .and(wrapper -> wrapper.isNull("shhf").or().ne("shhf", "salary_appeal"))
+                        .and(wrapper -> wrapper.isNull("shensuyuanyin")
+                                .or(condition -> condition.notLike("shensuyuanyin", "工资")
+                                        .notLike("shensuyuanyin", "薪资")
+                                        .notLike("shensuyuanyin", "宸ヨ祫")
+                                        .notLike("shensuyuanyin", "钖祫")))
+                        .orderByDesc("id")
+                        .last("limit 1"),
+                false
+        );
+        if (appeal != null && isApproved(appeal.getSfsh())) {
+            finalPosition = latest.getZhiwei();
+        }
+        if (StringUtils.isBlank(finalPosition)) {
             return;
         }
         YuangongEntity yuangong = yuangongService.getOne(
-                new QueryWrapper<YuangongEntity>().eq("gonghao", diaodong.getGonghao()),
+                new QueryWrapper<YuangongEntity>().eq("gonghao", gonghao),
                 false
         );
         if (yuangong == null) {
             return;
         }
-        yuangong.setZhiwei(diaodong.getZhiwei());
+        yuangong.setZhiwei(finalPosition);
         yuangongService.updateById(yuangong);
     }
 

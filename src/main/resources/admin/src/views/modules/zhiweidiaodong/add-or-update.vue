@@ -391,6 +391,12 @@
 					if(!this.ruleForm.id) {
 						delete this.ruleForm.userid
 					}
+					const oldPosition = (this.ruleForm.zhiwei || '').trim();
+					const newPosition = (this.ruleForm.xianzhiwei || '').trim();
+					if (oldPosition && newPosition && oldPosition === newPosition) {
+						this.$message.error('原职位和现职位不能相同，请重新选择现职位');
+						return;
+					}
 					await this.$refs["ruleForm"].validate(async valid => {
 						if (valid) {
 							if(this.type=='cross'){

@@ -259,13 +259,13 @@ public class QingjiashenqingController {
 
     private R checkDuplicateLeave(QingjiashenqingEntity qingjiashenqing, Long excludeId) {
         if (StringUtils.isBlank(qingjiashenqing.getGonghao())) {
-            return R.error("工号不能为空");
+            return R.error("请先选择员工，工号不能为空");
         }
         if (qingjiashenqing.getQingjiashijian() == null || qingjiashenqing.getJieshushijian() == null) {
-            return R.error("请假时间和结束时间不能为空");
+            return R.error("请假开始时间和结束时间不能为空，请完整选择请假时间");
         }
         if (!qingjiashenqing.getQingjiashijian().before(qingjiashenqing.getJieshushijian())) {
-            return R.error("结束时间必须晚于请假时间");
+            return R.error("结束时间必须晚于请假开始时间，请重新选择");
         }
 
         QueryWrapper<QingjiashenqingEntity> wrapper = new QueryWrapper<QingjiashenqingEntity>()
@@ -283,9 +283,9 @@ public class QingjiashenqingController {
                     qingjiashenqing.getQingjiashijian().equals(item.getQingjiashijian())
                             && qingjiashenqing.getJieshushijian().equals(item.getJieshushijian()));
             if (sameTime) {
-                return R.error("重复请假：相同时间段已有请假申请，只有上一条被人事管理员审核不通过后才可以重新申请");
+                return R.error("该时间段已有请假申请，不能重复提交；如需重新申请，请先由人事管理员将上一条审核为不通过");
             }
-            return R.error("请假时间与已有请假申请重叠，只有上一条被人事管理员审核不通过后才可以重新申请");
+            return R.error("请假时间与已有申请重叠，不能重复提交；如需重新申请，请先由人事管理员将上一条审核为不通过");
         }
         return null;
     }

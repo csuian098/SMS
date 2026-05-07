@@ -256,6 +256,10 @@ public class YuangongxinziController {
     @SysLog("新增员工薪资")
     public R save(@RequestBody YuangongxinziEntity yuangongxinzi, HttpServletRequest request){
         //ValidatorUtils.validateEntity(yuangongxinzi);
+        String duplicateMsg = validateMonthlySalaryUnique(yuangongxinzi);
+        if (duplicateMsg != null) {
+            return R.error(duplicateMsg);
+        }
         fillAutoSalaryFields(yuangongxinzi);
         yuangongxinziService.save(yuangongxinzi);
         return R.ok().put("data",yuangongxinzi.getId());
@@ -268,6 +272,10 @@ public class YuangongxinziController {
     @RequestMapping("/add")
     public R add(@RequestBody YuangongxinziEntity yuangongxinzi, HttpServletRequest request){
         //ValidatorUtils.validateEntity(yuangongxinzi);
+        String duplicateMsg = validateMonthlySalaryUnique(yuangongxinzi);
+        if (duplicateMsg != null) {
+            return R.error(duplicateMsg);
+        }
         fillAutoSalaryFields(yuangongxinzi);
         yuangongxinziService.save(yuangongxinzi);
         return R.ok().put("data",yuangongxinzi.getId());
@@ -286,9 +294,36 @@ public class YuangongxinziController {
     public R update(@RequestBody YuangongxinziEntity yuangongxinzi, HttpServletRequest request){
         //ValidatorUtils.validateEntity(yuangongxinzi);
         //鍏ㄩ儴鏇存柊
+        String duplicateMsg = validateMonthlySalaryUnique(yuangongxinzi);
+        if (duplicateMsg != null) {
+            return R.error(duplicateMsg);
+        }
         fillAutoSalaryFields(yuangongxinzi);
         yuangongxinziService.updateById(yuangongxinzi);
         return R.ok();
+    }
+
+    private String validateMonthlySalaryUnique(YuangongxinziEntity yuangongxinzi) {
+        if (yuangongxinzi == null || StringUtils.isBlank(yuangongxinzi.getGonghao())) {
+            return null;
+        }
+        Date refDate = yuangongxinzi.getDengjiriqi() == null ? new Date() : yuangongxinzi.getDengjiriqi();
+        if (yuangongxinzi.getDengjiriqi() == null) {
+            yuangongxinzi.setDengjiriqi(refDate);
+        }
+        QueryWrapper<YuangongxinziEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq("gonghao", yuangongxinzi.getGonghao().trim())
+                .ge("dengjiriqi", getMonthStart(refDate))
+                .le("dengjiriqi", getMonthEnd(refDate));
+        if (yuangongxinzi.getId() != null) {
+            wrapper.ne("id", yuangongxinzi.getId());
+        }
+        long count = yuangongxinziService.count(wrapper);
+        if (count > 0) {
+            String month = new SimpleDateFormat("yyyy-MM").format(refDate);
+            return "\u8be5\u5458\u5de5" + month + "\u5df2\u5b58\u5728\u85aa\u8d44\u8bb0\u5f55\uff0c\u4e0d\u5141\u8bb8\u91cd\u590d\u53d1\u653e\u85aa\u8d44";
+        }
+        return null;
     }
 
     private void fillAutoSalaryFields(YuangongxinziEntity yuangongxinzi) {
@@ -380,14 +415,14 @@ public class YuangongxinziController {
                              @RequestParam String dengjiriqi,
                              @RequestParam(required = false) Double jibengongzi) {
         if (StringUtils.isBlank(gonghao) || StringUtils.isBlank(dengjiriqi)) {
-            return R.error("工号与登记日期不能为空");
+            return R.error("请先选择员工并填写登记日期，才能计算薪资");
         }
         try {
             Date refDate = new SimpleDateFormat("yyyy-MM-dd").parse(dengjiriqi.trim());
             double jb = jibengongzi == null ? 0D : jibengongzi;
             return R.ok().put("data", buildSalarySideComputation(gonghao.trim(), refDate, jb));
         } catch (ParseException e) {
-            return R.error("鐧昏鏃ユ湡鏍煎紡椤讳负 yyyy-MM-dd");
+            return R.error("登记日期格式不正确，请按 yyyy-MM-dd 填写");
         }
     }
 
@@ -477,7 +512,9 @@ public class YuangongxinziController {
         }
 
         Date attendanceCountEnd = getCompletedAttendanceEnd(monthEnd);
-        int weiqiandaoTianshu = countWeekdaysWithoutSignNoLeave(monthStart, attendanceCountEnd, signInDays, leaveDays);
+        List<String> missingAttendanceDates = collectWeekdaysWithoutSignNoLeave(monthStart, attendanceCountEnd, signInDays, leaveDays);
+        List<String> incompleteAttendanceDates = collectTrailingIncompleteAttendanceDates(missingAttendanceDates, anyQiandaoDays, leaveDays);
+        int weiqiandaoTianshu = missingAttendanceDates.size();
         int weekendAbsent = countWeekendNoAttendance(monthStart, attendanceCountEnd, anyQiandaoDays, leaveDays);
 
         double hourly = jibengongzi <= 0D ? 0D : jibengongzi / 116D;
@@ -499,6 +536,8 @@ public class YuangongxinziController {
         out.put("weiqiandaotianshu", weiqiandaoTianshu);
         out.put("weiqiandaokouxin", weiqiandaokouxin);
         out.put("jiaqikouxin", jiaqikouxin);
+        out.put("missingAttendanceDates", missingAttendanceDates);
+        out.put("incompleteAttendanceDates", incompleteAttendanceDates);
         return out;
     }
 
@@ -559,8 +598,12 @@ public class YuangongxinziController {
     }
 
     private int countWeekdaysWithoutSignNoLeave(Date monthStart, Date monthEnd, Set<String> signInDays, Set<String> leaveDays) {
+        return collectWeekdaysWithoutSignNoLeave(monthStart, monthEnd, signInDays, leaveDays).size();
+    }
+
+    private List<String> collectWeekdaysWithoutSignNoLeave(Date monthStart, Date monthEnd, Set<String> signInDays, Set<String> leaveDays) {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-        int cnt = 0;
+        List<String> dates = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         cal.setTime(monthStart);
         stripToMidnight(cal);
@@ -572,12 +615,42 @@ public class YuangongxinziController {
             if (dow != Calendar.SUNDAY && dow != Calendar.MONDAY) {
                 String key = df.format(cal.getTime());
                 if (!signInDays.contains(key) && !leaveDays.contains(key)) {
-                    cnt++;
+                    dates.add(key);
                 }
             }
             cal.add(Calendar.DAY_OF_MONTH, 1);
         }
-        return cnt;
+        return dates;
+    }
+
+    private List<String> collectTrailingIncompleteAttendanceDates(List<String> missingDates, Set<String> anyQiandaoDays, Set<String> leaveDays) {
+        List<String> out = new ArrayList<>();
+        if (missingDates == null || missingDates.isEmpty()) {
+            return out;
+        }
+        String latestStatusDay = null;
+        Set<String> statusDays = new HashSet<>();
+        if (anyQiandaoDays != null) {
+            statusDays.addAll(anyQiandaoDays);
+        }
+        if (leaveDays != null) {
+            statusDays.addAll(leaveDays);
+        }
+        for (String day : statusDays) {
+            if (latestStatusDay == null || day.compareTo(latestStatusDay) > 0) {
+                latestStatusDay = day;
+            }
+        }
+        if (latestStatusDay == null) {
+            out.addAll(missingDates);
+            return out;
+        }
+        for (String day : missingDates) {
+            if (day.compareTo(latestStatusDay) > 0) {
+                out.add(day);
+            }
+        }
+        return out;
     }
 
     private int countWeekendNoAttendance(Date monthStart, Date monthEnd, Set<String> anyQiandaoDays, Set<String> leaveDays) {
@@ -1097,4 +1170,3 @@ public class YuangongxinziController {
     }
 
 }
-
