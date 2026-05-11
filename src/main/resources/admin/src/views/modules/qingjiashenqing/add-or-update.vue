@@ -64,6 +64,7 @@
 						type="datetime"
 						:readonly="ro.qingjiashijian"
 						placeholder="请假时间"
+						@change="handleLeaveTimeChange"
 					></el-date-picker>
 				</el-form-item>
 				<el-form-item class="input" v-else-if="ruleForm.qingjiashijian" label="请假时间" prop="qingjiashijian" >
@@ -76,13 +77,14 @@
 						type="datetime"
 						:readonly="ro.jieshushijian"
 						placeholder="结束时间"
+						@change="handleLeaveTimeChange"
 					></el-date-picker>
 				</el-form-item>
 				<el-form-item class="input" v-else-if="ruleForm.jieshushijian" label="结束时间" prop="jieshushijian" >
 					<el-input v-model="ruleForm.jieshushijian" placeholder="结束时间" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-if="type!='info'" label="请假天数" prop="qingjiatianshu" >
-					<el-input v-model="qingjiatianshu" placeholder="请假天数" readonly></el-input>
+					<el-input :value="qingjiatianshu" placeholder="请假天数" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-else-if="ruleForm.qingjiatianshu" label="请假天数" prop="qingjiatianshu" >
 					<el-input v-model="ruleForm.qingjiatianshu" placeholder="请假天数" readonly></el-input>
@@ -187,6 +189,7 @@
 				qingjialeixingOptions: [],
 				guanlixingmingOptions: [],
 				guanliOptions: [],
+				leaveRestDays: [],
 
 				rules: {
 					gonghao: [
@@ -229,12 +232,10 @@
 			},
 			qingjiatianshu : {
 				get: function () {
-					let d = this.ruleForm
-					let a = 'd1.qingjiashijian-d1.jieshushijian'
-					let n = a.split('-')
-					let day = this.getDay(d[n[0].split('d1.')[1]], d[n[1].split('d1.')[1]])
-					this.ruleForm.qingjiatianshu = day?day:0
-					return day?day:0
+					const info = this.getLeaveDayInfo(this.ruleForm.qingjiashijian, this.ruleForm.jieshushijian)
+					this.ruleForm.qingjiatianshu = info.days
+					this.leaveRestDays = info.restDays
+					return info.days
 				}
 			},
 
@@ -251,17 +252,41 @@
 			imgPreView(url){
 				this.$parent.imgPreView(url)
 			},
-			// 获取日期间隔 单位天
-			getDay(first, last) {
+			isSystemRestDay(date) {
+				const day = date.getDay()
+				return day === 0 || day === 1
+			},
+			formatDateKey(date) {
+				const pad = n => (n < 10 ? '0' : '') + n
+				return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+			},
+			getLeaveDayInfo(first, last) {
 				let date1 = new Date(first)
 				let date2 = new Date(last)
-				let a = date1.getTime();
-				let b = date2.getTime();
-				var count = 0;
-				for (var i = a; i < b; i += 24 * 3600 * 1000) {
-					count++;
+				if (!first || !last || isNaN(date1.getTime()) || isNaN(date2.getTime()) || date2 <= date1) {
+					return { days: 0, restDays: [] }
 				}
-				return count;
+				const cur = new Date(date1.getFullYear(), date1.getMonth(), date1.getDate())
+				const end = new Date(date2.getFullYear(), date2.getMonth(), date2.getDate())
+				let count = 0
+				const restDays = []
+				while (cur <= end) {
+					if (this.isSystemRestDay(cur)) {
+						restDays.push(this.formatDateKey(cur))
+					} else {
+						count++
+					}
+					cur.setDate(cur.getDate() + 1)
+				}
+				return { days: count, restDays }
+			},
+			handleLeaveTimeChange() {
+				const info = this.getLeaveDayInfo(this.ruleForm.qingjiashijian, this.ruleForm.jieshushijian)
+				this.ruleForm.qingjiatianshu = info.days
+				this.leaveRestDays = info.restDays
+				if (info.restDays.length) {
+					this.$message.warning(`请假时间涉及休息日：${info.restDays.join('、')}，系统已自动排除，不计入请假天数`)
+				}
 			},
 			// 下载
 			download(file){
@@ -446,8 +471,14 @@
 
 			// 提交
 			async onSubmit() {
+					const leaveInfo = this.getLeaveDayInfo(this.ruleForm.qingjiashijian, this.ruleForm.jieshushijian)
+					this.ruleForm.qingjiatianshu = leaveInfo.days
+					this.leaveRestDays = leaveInfo.restDays
+					if (leaveInfo.restDays.length) {
+						this.$message.warning(`请假时间涉及休息日：${leaveInfo.restDays.join('、')}，系统已自动排除，不计入请假天数`)
+					}
 					if(this.ruleForm.qingjiatianshu==0){
-						this.$message.error('请假天数不能为空')
+						this.$message.error('请假时间未包含工作日，请重新选择请假时间')
 						return false
 					}
 					var objcross = this.$storage.getObj('crossObj');

@@ -36,6 +36,16 @@
             </el-select>
           </div>
           <div class="query-item">
+            <label class="item-label">工号</label>
+            <el-input
+              v-model="searchForm.gonghao"
+              placeholder="工号"
+              clearable
+              style="width: 200px;"
+              @keydown.enter.native="search()"
+            ></el-input>
+          </div>
+          <div class="query-item">
             <label class="item-label">审核状态</label>
             <el-select v-model="searchForm.sfsh" placeholder="请选择审核状态" clearable style="width: 160px;">
               <el-option label="待审核" value="待审核" />
@@ -137,6 +147,7 @@ export default {
         key: '',
         qingjiashijianDateRange: null,
         xingming: '',
+        gonghao: '',
         sfsh: ''
       },
       xingmingOptions: [],
@@ -188,6 +199,9 @@ export default {
       }
       if (this.searchForm.xingming && this.searchForm.xingming.trim()) {
         params.xingming = '%' + this.searchForm.xingming.trim() + '%'
+      }
+      if (this.searchForm.gonghao && this.searchForm.gonghao.trim()) {
+        params.gonghao = '%' + this.searchForm.gonghao.trim() + '%'
       }
       if (this.searchForm.sfsh) {
         params.sfsh = this.searchForm.sfsh

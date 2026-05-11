@@ -34,10 +34,10 @@
 					<el-input v-model="ruleForm.gonghao" placeholder="工号" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-if="type!='info'"  label="密码" prop="mima" >
-					<el-input v-model="ruleForm.mima" placeholder="密码" clearable  :readonly="ro.mima"></el-input>
+					<el-input v-model="ruleForm.mima" placeholder="密码" clearable type="password" show-password :readonly="ro.mima"></el-input>
 				</el-form-item>
 				<el-form-item v-else class="input" label="密码" prop="mima" >
-					<el-input v-model="ruleForm.mima" placeholder="密码" readonly></el-input>
+					<el-input v-model="ruleForm.mima" placeholder="密码" type="password" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-if="type!='info'"  label="姓名" prop="xingming" >
 					<el-input v-model="ruleForm.xingming" placeholder="姓名" clearable  :readonly="ro.xingming"></el-input>
@@ -60,16 +60,16 @@
 						placeholder="性别" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-if="type!='info'"  label="手机" prop="shouji" >
-					<el-input v-model="ruleForm.shouji" placeholder="手机" clearable  :readonly="ro.shouji"></el-input>
+					<el-input :value="shoujiInputValue" placeholder="手机" clearable :readonly="ro.shouji" @focus="showRawShouji" @blur="hideRawShouji" @input="handleShoujiInput"></el-input>
 				</el-form-item>
 				<el-form-item v-else class="input" label="手机" prop="shouji" >
-					<el-input v-model="ruleForm.shouji" placeholder="手机" readonly></el-input>
+					<el-input :value="maskMobile(ruleForm.shouji)" placeholder="手机" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="input" v-if="type!='info'"  label="身份证" prop="shenfenzheng" >
-					<el-input v-model="ruleForm.shenfenzheng" placeholder="身份证" clearable  :readonly="ro.shenfenzheng"></el-input>
+					<el-input :value="shenfenzhengInputValue" placeholder="身份证" clearable :readonly="ro.shenfenzheng" @focus="showRawShenfenzheng" @blur="hideRawShenfenzheng" @input="handleShenfenzhengInput"></el-input>
 				</el-form-item>
 				<el-form-item v-else class="input" label="身份证" prop="shenfenzheng" >
-					<el-input v-model="ruleForm.shenfenzheng" placeholder="身份证" readonly></el-input>
+					<el-input :value="maskIdCard(ruleForm.shenfenzheng)" placeholder="身份证" readonly></el-input>
 				</el-form-item>
 				<el-form-item class="upload" v-if="type!='info' && !ro.touxiang" label="头像" prop="touxiang" >
 					<file-upload
@@ -94,8 +94,10 @@
 				<el-form-item v-else class="input" label="请假天数" prop="qingjiatianshu" >
 					<el-input v-model="ruleForm.qingjiatianshu" placeholder="请假天数" readonly></el-input>
 				</el-form-item> -->
-				<el-form-item class="input" v-if="type!='info'"  label="职位" prop="zhiwei" >
-					<el-input v-model="ruleForm.zhiwei" placeholder="职位" clearable  :readonly="ro.zhiwei"></el-input>
+				<el-form-item class="select" v-if="type!='info'"  label="职位" prop="zhiwei" >
+					<el-select v-model="ruleForm.zhiwei" placeholder="请选择职位" filterable allow-create default-first-option clearable :disabled="ro.zhiwei">
+						<el-option v-for="(item,index) in zhiweiOptions" :key="index" :label="item" :value="item"></el-option>
+					</el-select>
 				</el-form-item>
 				<el-form-item v-else class="input" label="职位" prop="zhiwei" >
 					<el-input v-model="ruleForm.zhiwei" placeholder="职位" readonly></el-input>
@@ -131,6 +133,8 @@
 			var validateIdCard = (rule, value, callback) => {
 				if(!value){
 					callback();
+				} else if (String(value).indexOf('*') > -1) {
+					callback();
 				} else if (!checkIdCard(value)) {
 					callback(new Error("请输入正确的身份证号码"));
 				} else {
@@ -139,6 +143,8 @@
 			};
 			var validateMobile = (rule, value, callback) => {
 				if(!value){
+					callback();
+				} else if (String(value).indexOf('*') > -1) {
 					callback();
 				} else if (!isMobile(value)) {
 					callback(new Error("请输入正确的手机号码"));
@@ -154,6 +160,39 @@
 				} else {
 					callback();
 				}
+			};
+			var validateGonghaoUnique = (rule, value, callback) => {
+				if(!value){ callback(); return; }
+				// 编辑时如果工号未变化，跳过校验
+				if(this.id && this._originalGonghao === value){ callback(); return; }
+				this.$http({
+					url: `yuangong/page`,
+					method: 'get',
+					params: { page: 1, limit: 1, gonghao: value }
+				}).then(({ data }) => {
+					if(data && data.code === 0 && data.data && data.data.list && data.data.list.length > 0){
+						callback(new Error('该工号已被使用'));
+					} else {
+						callback();
+					}
+				}).catch(() => callback());
+			};
+			var validateShenfenzhengUnique = (rule, value, callback) => {
+				if(!value || String(value).indexOf('*') > -1){ callback(); return; }
+				if(this.id && this._originalShenfenzheng === value){ callback(); return; }
+				this.$http({
+					url: `yuangong/page`,
+					method: 'get',
+					params: { page: 1, limit: 10, shenfenzheng: value }
+				}).then(({ data }) => {
+					let list = data && data.code === 0 && data.data && data.data.list ? data.data.list : [];
+					let duplicated = list.some(item => String(item.id) !== String(this.id));
+					if(duplicated){
+						callback(new Error('身份证不可重复'));
+					} else {
+						callback();
+					}
+				}).catch(() => callback());
 			};
 			return {
 				id: '',
@@ -184,10 +223,16 @@
 					zhiwei: '实习生',
 				},
 				xingbieOptions: [],
+				zhiweiOptions: [],
+				_originalGonghao: '',
+				_originalShenfenzheng: '',
+				shoujiFocused: false,
+				shenfenzhengFocused: false,
 
 				rules: {
 					gonghao: [
 						{ required: true, message: '工号不能为空', trigger: 'blur' },
+						{ validator: validateGonghaoUnique, trigger: 'blur' },
 					],
 					mima: [
 						{ required: true, message: '密码不能为空', trigger: 'blur' },
@@ -202,6 +247,8 @@
 					],
 					shenfenzheng: [
 						{ required: true, message: '身份证不能为空',  trigger: 'blur' },
+						{ validator: validateIdCard, trigger: 'blur' },
+						{ validator: validateShenfenzhengUnique, trigger: 'blur' },
 					],
 					touxiang: [
 					],
@@ -221,6 +268,24 @@
 			sessionTable() {
 				return this.$storage.get('sessionTable')
 			},
+			shoujiInputValue() {
+				if(this.type === 'info') {
+					return this.maskMobile(this.ruleForm.shouji);
+				}
+				if(this.shoujiFocused) {
+					return this.ruleForm.shouji;
+				}
+				return this.maskMobile(this.ruleForm.shouji);
+			},
+			shenfenzhengInputValue() {
+				if(this.type === 'info') {
+					return this.maskIdCard(this.ruleForm.shenfenzheng);
+				}
+				if(this.shenfenzhengFocused) {
+					return this.ruleForm.shenfenzheng;
+				}
+				return this.maskIdCard(this.ruleForm.shenfenzheng);
+			},
 
 
 
@@ -232,6 +297,38 @@
 		methods: {
 			imgPreView(url){
 				this.$parent.imgPreView(url)
+			},
+			maskMobile(value) {
+				if(value === undefined || value === null) return '';
+				const text = String(value);
+				return text.replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
+			},
+			maskIdCard(value) {
+				if(value === undefined || value === null) return '';
+				const text = String(value);
+				return text.replace(/^(.{6}).+(.{4})$/, '$1********$2');
+			},
+			showRawShouji() {
+				if(!this.ro.shouji) {
+					this.shoujiFocused = true;
+				}
+			},
+			hideRawShouji() {
+				this.shoujiFocused = false;
+			},
+			handleShoujiInput(value) {
+				this.ruleForm.shouji = value;
+			},
+			showRawShenfenzheng() {
+				if(!this.ro.shenfenzheng) {
+					this.shenfenzhengFocused = true;
+				}
+			},
+			hideRawShenfenzheng() {
+				this.shenfenzhengFocused = false;
+			},
+			handleShenfenzhengInput(value) {
+				this.ruleForm.shenfenzheng = value;
 			},
 			// 下载
 			download(file){
@@ -311,31 +408,34 @@
 						if(this.sessionTable!="users") {
 							this.ro.qingjiatianshu = true;
 						}
-						if(this.sessionTable!="users") {
-							this.ro.qingjiatianshu = true;
-						}
-						if(this.sessionTable!="users") {
-							this.ro.zhiwei = true;
-						}
-						if(this.sessionTable!="users") {
-							this.ro.zhiwei = true;
-						}
 					} else {
 						this.$message.error(data.msg);
 					}
 				});
 				this.xingbieOptions = "男,女".split(',')
-			
+				// 加载职位下拉选项
+				this.$http({
+					url: `option/zhiweixinxi/zhiwei`,
+					method: 'get'
+				}).then(({ data }) => {
+					if(data && data.code === 0 && Array.isArray(data.data)){
+						this.zhiweiOptions = data.data;
+					}
+				});
 			},
 			// 多级联动参数
 
 			async info(id) {
 				await this.$http({
-					url: `yuangong/info/${id}`,
+					url: `yuangong/rawInfo/${id}`,
 					method: "get"
 				}).then(({ data }) => {
 					if (data && data.code === 0) {
 						this.ruleForm = data.data;
+						this._originalGonghao = data.data.gonghao;
+						this._originalShenfenzheng = data.data.shenfenzheng;
+						// 编辑模式禁止修改职位（如需调整请走"职位调动"流程）
+						this.ro.zhiwei = true;
 						//解决前台上传图片后台不显示的问题
 						let reg=new RegExp('../../../upload','g')//g代表全部
 					} else {

@@ -9,6 +9,10 @@
 						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">姓名</label>
 						<el-input v-model="searchForm.xingming" placeholder="姓名" @keydown.enter.native="search()" clearable></el-input>
 					</div>
+					<div v-if="queryChange(['人事管理员', '管理员'])" :style='{"margin":"0 1% 10px 0","display":"flex"}'>
+						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">工号</label>
+						<el-input v-model="searchForm.gonghao" placeholder="工号" @keydown.enter.native="search()" clearable></el-input>
+					</div>
 					<div  :style='{"margin":"0 1% 10px 0","display":"flex"}'>
 						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">申诉原因</label>
 						<el-input v-model="searchForm.shensuyuanyin" placeholder="申诉原因" @keydown.enter.native="search()" clearable></el-input>
@@ -281,6 +285,9 @@
 				}
 				if(this.searchForm.xingming!='' && this.searchForm.xingming!=undefined){
 					params['xingming'] = '%' + this.searchForm.xingming + '%'
+				}
+				if(this.searchForm.gonghao!='' && this.searchForm.gonghao!=undefined){
+					params['gonghao'] = '%' + this.searchForm.gonghao + '%'
 				}
 				if(this.searchForm.shensuyuanyin!='' && this.searchForm.shensuyuanyin!=undefined){
 					params['shensuyuanyin'] = '%' + this.searchForm.shensuyuanyin + '%'

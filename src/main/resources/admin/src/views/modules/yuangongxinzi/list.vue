@@ -17,6 +17,10 @@
 							<el-option v-for="(item,index) in xingmingOptions" v-bind:key="index" :label="item" :value="item"></el-option>
 						</el-select>
 					</div>
+					<div v-if="['人事管理员', '管理员'].includes(role)" :style='{"margin":"0 1% 10px 0","display":"flex"}'>
+						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">工号</label>
+						<el-input v-model="searchFormSafe.gonghao" placeholder="工号" @keydown.enter.native="search()" clearable></el-input>
+					</div>
 					<div v-if="['人事管理员', '管理员'].includes(role)" :style='{"margin":"0 1% 10px 0","display":"flex"}' class="select" label="支付状态" prop="ispay">
 						<label :style='{"margin":"0 10px 0 0","whiteSpace":"nowrap","color":"#666","display":"inline-block","lineHeight":"40px","fontSize":"16px","fontWeight":"500","height":"40px"}' class="item-label">支付状态</label>
 						<el-select clearable v-model="searchFormSafe.ispay" placeholder="请选择支付状态">
@@ -382,12 +386,14 @@
 						this.searchForm = {
 							key: "",
 							xingming: '',
+							gonghao: '',
 							ispay: '',
 							dengjiriqistart: '',
 							dengjiriqiend: ''
 						}
 					}
 					if (this.searchForm.xingming === undefined) this.$set(this.searchForm, 'xingming', '')
+					if (this.searchForm.gonghao === undefined) this.$set(this.searchForm, 'gonghao', '')
 					if (this.searchForm.ispay === undefined) this.$set(this.searchForm, 'ispay', '')
 					if (this.searchForm.dengjiriqistart === undefined) this.$set(this.searchForm, 'dengjiriqistart', '')
 					if (this.searchForm.dengjiriqiend === undefined) this.$set(this.searchForm, 'dengjiriqiend', '')
@@ -649,6 +655,9 @@
 				}
 				if(sf.xingming!='' && sf.xingming!=undefined){
 					params['xingming'] = sf.xingming
+				}
+				if(sf.gonghao!='' && sf.gonghao!=undefined){
+					params['gonghao'] = sf.gonghao
 				}
 				if(sf.ispay!='' && sf.ispay!=undefined){
 					params['ispay'] = sf.ispay

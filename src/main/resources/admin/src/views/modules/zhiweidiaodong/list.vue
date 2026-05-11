@@ -109,6 +109,14 @@
 							<span v-if="isAppealSubmitted(scope.row)" class="appeal-dot"></span>
 						</template>
 					</el-table-column>
+					<el-table-column v-if="isHrPositionMode" label="调动记录" width="220" align="center">
+						<template slot-scope="scope">
+							<el-button class="view" type="success" @click="openTransferRecordDialog(scope.row)">
+								<span class="icon iconfont icon-chakan2" :style='{"margin":"0 0px","fontSize":"14px","color":"#333","display":"none","height":"40px"}'></span>
+								查看调动记录
+							</el-button>
+						</template>
+					</el-table-column>
 					<el-table-column width="300" label="操作">
 						<template slot-scope="scope">
 							<el-button class="view" v-if="!isHrPositionMode && isAuth('zhiweidiaodong','查看')" type="success" @click="addOrUpdateHandler(scope.row.id,'info')">
@@ -164,6 +172,34 @@
 		<zhiweishensu-cross-add-or-update v-if="zhiweishensuCrossAddOrUpdateFlag" :parent="this" ref="zhiweishensuCrossaddOrUpdate"></zhiweishensu-cross-add-or-update>
 		<tongyixinxi-cross-add-or-update v-if="tongyixinxiCrossAddOrUpdateFlag" :parent="this" ref="tongyixinxiCrossaddOrUpdate"></tongyixinxi-cross-add-or-update>
 
+		<el-dialog :title="transferRecordTitle" :visible.sync="transferRecordVisible" width="76%" append-to-body>
+			<el-table
+				class="tables"
+				:data="transferRecordList"
+				v-loading="transferRecordLoading"
+				empty-text="暂无调动记录"
+				:border="false"
+				style="width: 100%;">
+				<el-table-column label="序号" type="index" width="60"></el-table-column>
+				<el-table-column prop="gonghao" label="工号" width="120"></el-table-column>
+				<el-table-column prop="xingming" label="姓名" width="120"></el-table-column>
+				<el-table-column prop="displayZhiwei" label="原职位"></el-table-column>
+				<el-table-column prop="displayXianzhiwei" label="现职位"></el-table-column>
+				<el-table-column prop="biandongriqi" label="变动日期" width="130"></el-table-column>
+				<el-table-column prop="diaodongjieguo" label="调动结果" min-width="180">
+					<template slot-scope="scope">
+						<el-tag v-if="scope.row.diaodongjieguo === '已同意'" type="success" size="small">已同意</el-tag>
+						<el-tag v-else-if="scope.row.diaodongjieguo === '已申诉'" type="danger" size="small">已申诉</el-tag>
+						<el-tag v-else type="warning" size="small">待处理</el-tag>
+					</template>
+				</el-table-column>
+				<el-table-column prop="guanlixingming" label="管理姓名" width="120"></el-table-column>
+			</el-table>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="transferRecordVisible = false">关闭</el-button>
+			</div>
+		</el-dialog>
+
 
 
 
@@ -197,6 +233,10 @@
 				totalPage: 0,
 				dataListLoading: false,
 				dataListSelections: [],
+				transferRecordVisible: false,
+				transferRecordLoading: false,
+				transferRecordTitle: '员工调动记录',
+				transferRecordList: [],
 				actionButtonsHiddenMap: {},
 				showFlag: true,
 				addOrUpdateFlag:false,
@@ -455,6 +495,140 @@
 				this.$nextTick(() => {
 					this.$refs.addOrUpdate.init(row.id, 'fromEmployee', row);
 				});
+			},
+			openTransferRecordDialog(row) {
+				if(!row || !row.gonghao) {
+					this.$message.warning('未获取到员工工号，无法查询调动记录');
+					return;
+				}
+				this.transferRecordVisible = true;
+				this.transferRecordLoading = true;
+				this.transferRecordTitle = `员工调动记录 - ${row.xingming || ''}（${row.gonghao}）`;
+				this.transferRecordList = [];
+				this.$http({
+					url: 'zhiweidiaodong/page',
+					method: 'get',
+					params: {
+						page: 1,
+						limit: 100,
+						gonghao: row.gonghao,
+						sort: 'biandongriqi',
+						order: 'desc'
+					}
+				}).then(({ data }) => {
+					if(data && data.code === 0 && data.data) {
+						this.transferRecordList = data.data.list || [];
+						this.loadTransferRecordResults(row.gonghao);
+					} else {
+						this.transferRecordList = [];
+						this.$message.error((data && data.msg) || '查询调动记录失败');
+						this.transferRecordLoading = false;
+					}
+				}).catch(() => {
+					this.transferRecordList = [];
+					this.transferRecordLoading = false;
+					this.$message.error('查询调动记录失败');
+				});
+			},
+			loadTransferRecordResults(gonghao) {
+				if(!this.transferRecordList || !this.transferRecordList.length) {
+					this.transferRecordLoading = false;
+					return;
+				}
+				let recordIdSet = new Set(this.transferRecordList.map(item => String(item.id)));
+				let getResponseList = (res) => {
+					let body = res && res.data;
+					if(!body || body.code !== 0 || !body.data) {
+						return [];
+					}
+					if(Array.isArray(body.data)) {
+						return body.data;
+					}
+					return body.data.list || [];
+				};
+				Promise.all([
+					this.$http({
+						url: 'tongyixinxi/list',
+						method: 'get',
+						params: {
+							page: 1,
+							limit: 1000,
+							gonghao: gonghao
+						}
+					}),
+					this.$http({
+						url: 'zhiweishensu/list',
+						method: 'get',
+						params: {
+							page: 1,
+							limit: 1000,
+							gonghao: gonghao
+						}
+					})
+				]).then(([tongyiRes, shensuRes]) => {
+					let tongyiList = getResponseList(tongyiRes).filter(item => String(item.gonghao || '') === String(gonghao || '') && recordIdSet.has(String(item.crossrefid)));
+					let shensuList = getResponseList(shensuRes).filter(item => String(item.gonghao || '') === String(gonghao || '') && recordIdSet.has(String(item.crossrefid)));
+					let records = this.transferRecordList.map(item => {
+						let recordId = String(item.id);
+						let appealRecord = shensuList.find(shensu => String(shensu.crossrefid) === recordId && this.isPositionAppealRecord(shensu));
+						let hasAppeal = !!appealRecord;
+						let hasAgree = tongyiList.some(tongyi => String(tongyi.crossrefid) === recordId);
+						return Object.assign({}, item, {
+							diaodongjieguo: hasAppeal ? '已申诉' : (hasAgree ? '已同意' : '待处理'),
+							appealStatus: appealRecord ? appealRecord.sfsh : ''
+						});
+					});
+					this.transferRecordList = this.buildEffectiveTransferRecords(records);
+					this.transferRecordLoading = false;
+				}).catch(() => {
+					this.transferRecordList = this.transferRecordList.map(item => Object.assign({}, item, {
+						diaodongjieguo: '待处理',
+						displayZhiwei: item.zhiwei,
+						displayXianzhiwei: item.xianzhiwei
+					}));
+					this.transferRecordLoading = false;
+				});
+			},
+			isApprovedStatus(value) {
+				return value === '是' || value === '通过';
+			},
+			buildEffectiveTransferRecords(records) {
+				if(!records || !records.length) {
+					return [];
+				}
+				let sorted = records.slice().sort((a, b) => {
+					let dateCompare = String(a.biandongriqi || '').localeCompare(String(b.biandongriqi || ''));
+					if(dateCompare !== 0) {
+						return dateCompare;
+					}
+					return Number(a.id || 0) - Number(b.id || 0);
+				});
+				let currentPosition = sorted[0].zhiwei || '';
+				let effectiveList = [];
+				sorted.forEach(item => {
+					let displayOld = currentPosition || item.zhiwei || '';
+					let displayNew = item.xianzhiwei || '';
+					let normalized = Object.assign({}, item, {
+						displayZhiwei: displayOld,
+						displayXianzhiwei: displayNew
+					});
+					let isNoChange = displayOld && displayNew && displayOld === displayNew;
+					if(!isNoChange) {
+						effectiveList.push(normalized);
+					}
+					if(item.diaodongjieguo === '已同意') {
+						currentPosition = displayNew || currentPosition;
+					} else if(item.diaodongjieguo === '已申诉') {
+						if(this.isApprovedStatus(item.appealStatus)) {
+							currentPosition = displayOld || currentPosition;
+						} else if(item.appealStatus) {
+							currentPosition = displayNew || currentPosition;
+						}
+					} else if(!isNoChange) {
+						currentPosition = displayNew || currentPosition;
+					}
+				});
+				return effectiveList.reverse();
 			},
 
 			// 鑾峰彇鏁版嵁鍒楄〃

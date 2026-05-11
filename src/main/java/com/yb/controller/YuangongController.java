@@ -51,6 +51,17 @@ public class YuangongController {
     @Autowired
     private YuangongService yuangongService;
 
+    private boolean shenfenzhengExists(String shenfenzheng, Long excludeId) {
+        if(StringUtils.isBlank(shenfenzheng) || shenfenzheng.contains("*")) {
+            return false;
+        }
+        QueryWrapper<YuangongEntity> wrapper = new QueryWrapper<YuangongEntity>().eq("shenfenzheng", shenfenzheng);
+        if(excludeId != null) {
+            wrapper.ne("id", excludeId);
+        }
+        return yuangongService.count(wrapper) > 0;
+    }
+
 
 
 
@@ -96,6 +107,9 @@ public class YuangongController {
         //判断是否存在相同工号，否则返回错误信息
         if(yuangongService.count(new QueryWrapper<YuangongEntity>().eq("gonghao", yuangong.getGonghao()))>0) {
             return R.error("工号已存在");
+        }
+        if(shenfenzhengExists(yuangong.getShenfenzheng(), null)) {
+            return R.error("身份证不可重复");
         }
 		Long uId = new Date().getTime();
 		yuangong.setId(uId);
@@ -179,6 +193,7 @@ public class YuangongController {
 		PageUtils page = yuangongService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, yuangong), params), params));
         Map<String, String> deSens = new HashMap<>();
         deSens.put("shenfenzheng","身");
+        deSens.put("shouji","手");
         //给需要脱敏的字段脱敏
         DeSensUtil.desensitize(page,deSens);
         return R.ok().put("data", page);
@@ -203,6 +218,7 @@ public class YuangongController {
 		PageUtils page = yuangongService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, yuangong), params), params));
         Map<String, String> deSens = new HashMap<>();
         deSens.put("shenfenzheng","身");
+        deSens.put("shouji","手");
         //给需要脱敏的字段脱敏
         DeSensUtil.desensitize(page,deSens);
         return R.ok().put("data", page);
@@ -240,6 +256,7 @@ public class YuangongController {
         YuangongEntity yuangong = yuangongService.getById(id);
         Map<String, String> deSens = new HashMap<>();
         deSens.put("shenfenzheng","身");
+        deSens.put("shouji","手");
         //给需要脱敏的字段脱敏
         DeSensUtil.desensitize(yuangong,deSens);
         return R.ok().put("data", yuangong);
@@ -248,12 +265,19 @@ public class YuangongController {
     /**
      * 前台详情
      */
+    @RequestMapping("/rawInfo/{id}")
+    public R rawInfo(@PathVariable("id") Long id){
+        YuangongEntity yuangong = yuangongService.getById(id);
+        return R.ok().put("data", yuangong);
+    }
+
 	@IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
         YuangongEntity yuangong = yuangongService.getById(id);
         Map<String, String> deSens = new HashMap<>();
         deSens.put("shenfenzheng","身");
+        deSens.put("shouji","手");
         //给需要脱敏的字段脱敏
         DeSensUtil.desensitize(yuangong,deSens);
         return R.ok().put("data", yuangong);
@@ -277,6 +301,9 @@ public class YuangongController {
         YuangongEntity u = yuangongService.getOne(new QueryWrapper<YuangongEntity>().eq("gonghao", yuangong.getGonghao()));
         if(u!=null) {
             return R.error("用户已存在");
+        }
+        if(shenfenzhengExists(yuangong.getShenfenzheng(), null)) {
+            return R.error("身份证不可重复");
         }
     	yuangong.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
 		yuangong.setId(new Date().getTime());
@@ -302,6 +329,9 @@ public class YuangongController {
         if(u!=null) {
             return R.error("用户已存在");
         }
+        if(shenfenzhengExists(yuangong.getShenfenzheng(), null)) {
+            return R.error("身份证不可重复");
+        }
     	yuangong.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
 		yuangong.setId(new Date().getTime());
         //密码使用md5方式加密
@@ -326,11 +356,21 @@ public class YuangongController {
         if(yuangongService.count(new QueryWrapper<YuangongEntity>().ne("id", yuangong.getId()).eq("gonghao", yuangong.getGonghao()))>0) {
             return R.error("工号已存在");
         }
+        if(shenfenzhengExists(yuangong.getShenfenzheng(), yuangong.getId())) {
+            return R.error("身份证不可重复");
+        }
 	    YuangongEntity yuangongEntity = yuangongService.getById(yuangong.getId());
         //如果密码不为空，则判断是否和输入密码一致，不一致则重新设置
         if(StringUtils.isNotBlank(yuangong.getMima()) && !yuangong.getMima().equals(yuangongEntity.getMima())) {
             //密码使用md5方式加密
             yuangong.setMima(EncryptUtil.md5(yuangong.getMima()));
+        }
+        //如果脱敏字段提交回来的是带 * 的脱敏值，保留数据库原值，避免脏数据写回
+        if(yuangong.getShouji()!=null && yuangong.getShouji().contains("*")) {
+            yuangong.setShouji(yuangongEntity.getShouji());
+        }
+        if(yuangong.getShenfenzheng()!=null && yuangong.getShenfenzheng().contains("*")) {
+            yuangong.setShenfenzheng(yuangongEntity.getShenfenzheng());
         }
         //全部更新
         yuangongService.updateById(yuangong);

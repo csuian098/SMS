@@ -173,6 +173,10 @@ public class QingjiashenqingController {
     @SysLog("新增请假申请")
     public R save(@RequestBody QingjiashenqingEntity qingjiashenqing, HttpServletRequest request){
         //ValidatorUtils.validateEntity(qingjiashenqing);
+        R leaveDayCheck = normalizeLeaveDays(qingjiashenqing);
+        if (leaveDayCheck != null) {
+            return leaveDayCheck;
+        }
         R duplicateCheck = checkDuplicateLeave(qingjiashenqing, null);
         if (duplicateCheck != null) {
             return duplicateCheck;
@@ -188,6 +192,10 @@ public class QingjiashenqingController {
     @RequestMapping("/add")
     public R add(@RequestBody QingjiashenqingEntity qingjiashenqing, HttpServletRequest request){
         //ValidatorUtils.validateEntity(qingjiashenqing);
+        R leaveDayCheck = normalizeLeaveDays(qingjiashenqing);
+        if (leaveDayCheck != null) {
+            return leaveDayCheck;
+        }
         R duplicateCheck = checkDuplicateLeave(qingjiashenqing, null);
         if (duplicateCheck != null) {
             return duplicateCheck;
@@ -208,6 +216,10 @@ public class QingjiashenqingController {
     @SysLog("修改请假申请")
     public R update(@RequestBody QingjiashenqingEntity qingjiashenqing, HttpServletRequest request){
         //ValidatorUtils.validateEntity(qingjiashenqing);
+        R leaveDayCheck = normalizeLeaveDays(qingjiashenqing);
+        if (leaveDayCheck != null) {
+            return leaveDayCheck;
+        }
         R duplicateCheck = checkDuplicateLeave(qingjiashenqing, qingjiashenqing.getId());
         if (duplicateCheck != null) {
             return duplicateCheck;
@@ -256,6 +268,53 @@ public class QingjiashenqingController {
 
 
 
+
+    private R normalizeLeaveDays(QingjiashenqingEntity qingjiashenqing) {
+        if (StringUtils.isBlank(qingjiashenqing.getGonghao())) {
+            return R.error("请先选择员工，工号不能为空");
+        }
+        if (qingjiashenqing.getQingjiashijian() == null || qingjiashenqing.getJieshushijian() == null) {
+            return R.error("请假开始时间和结束时间不能为空，请完整选择请假时间");
+        }
+        if (!qingjiashenqing.getQingjiashijian().before(qingjiashenqing.getJieshushijian())) {
+            return R.error("结束时间必须晚于请假开始时间，请重新选择");
+        }
+        int leaveDays = countLeaveWorkdays(qingjiashenqing.getQingjiashijian(), qingjiashenqing.getJieshushijian());
+        if (leaveDays <= 0) {
+            return R.error("请假时间未包含工作日，请重新选择请假时间");
+        }
+        qingjiashenqing.setQingjiatianshu(leaveDays);
+        return null;
+    }
+
+    private int countLeaveWorkdays(Date start, Date end) {
+        Calendar cur = Calendar.getInstance();
+        cur.setTime(start);
+        zeroTime(cur);
+        Calendar last = Calendar.getInstance();
+        last.setTime(end);
+        zeroTime(last);
+        int days = 0;
+        while (!cur.after(last)) {
+            if (!isSystemRestDay(cur)) {
+                days++;
+            }
+            cur.add(Calendar.DATE, 1);
+        }
+        return days;
+    }
+
+    private boolean isSystemRestDay(Calendar calendar) {
+        int dow = calendar.get(Calendar.DAY_OF_WEEK);
+        return dow == Calendar.SUNDAY || dow == Calendar.MONDAY;
+    }
+
+    private void zeroTime(Calendar calendar) {
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+    }
 
     private R checkDuplicateLeave(QingjiashenqingEntity qingjiashenqing, Long excludeId) {
         if (StringUtils.isBlank(qingjiashenqing.getGonghao())) {

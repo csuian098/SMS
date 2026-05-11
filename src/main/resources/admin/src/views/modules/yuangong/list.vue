@@ -72,7 +72,7 @@
 												prop="shouji"
 						label="手机">
 						<template slot-scope="scope">
-							{{scope.row.shouji}}
+							{{maskMobile(scope.row.shouji)}}
 						</template>
 					</el-table-column>
 					<el-table-column :resizable='true' :sortable='true'
@@ -345,6 +345,11 @@
 				})
 			},
 			init () {
+			},
+			maskMobile(value) {
+				if(value === undefined || value === null) return '';
+				const text = String(value);
+				return text.replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
 			},
 			search() {
 				this.pageIndex = 1;

@@ -675,24 +675,23 @@
 								leaveHasRows = ld.data.list.length > 0
 								const lpad = n => (n < 10 ? '0' : '') + n
 								const localDs = d => `${d.getFullYear()}-${lpad(d.getMonth()+1)}-${lpad(d.getDate())}`
+								const isRestDay = d => d.getDay() === 0 || d.getDay() === 1
 								ld.data.list.forEach(row => {
 									const s = row.qingjiashijian ? String(row.qingjiashijian).substring(0, 10) : null
 									if (!s) return
 									const [sy, sm, sd] = s.split('-').map(Number)
 									let cur = new Date(sy, sm - 1, sd)
 									const leaveDays = Math.max(0, Math.ceil(Number(row.qingjiatianshu) || 0))
-									let endD = null
-									if (leaveDays > 0) {
-										endD = new Date(sy, sm - 1, sd)
-										endD.setDate(endD.getDate() + leaveDays - 1)
-									} else {
-										const e = row.jieshushijian ? String(row.jieshushijian).substring(0, 10) : s
-										const [ey, em, ed] = (e || s).split('-').map(Number)
-										endD = new Date(ey, em - 1, ed)
-									}
-									while (cur <= endD) {
-										const ds = localDs(cur)
-										map[ds] = 'leave'
+									const e = row.jieshushijian ? String(row.jieshushijian).substring(0, 10) : s
+									const [ey, em, ed] = (e || s).split('-').map(Number)
+									const endD = new Date(ey, em - 1, ed)
+									let counted = 0
+									while (cur <= endD && (leaveDays <= 0 || counted < leaveDays)) {
+										if (!isRestDay(cur)) {
+											const ds = localDs(cur)
+											map[ds] = 'leave'
+											counted++
+										}
 										cur.setDate(cur.getDate() + 1)
 									}
 								})
