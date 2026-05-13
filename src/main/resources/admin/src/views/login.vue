@@ -1,9 +1,8 @@
 <template>
 	<div>
-		<div class="login-container" :style="{'backgroundImage': indexBgUrl?`url(${$base.url + indexBgUrl})`:''}">
+		<div class="login-container" :style="{'backgroundImage': `url(${loginBackground})`}">
 			<el-form class="login_form animate__animated animate__">
 				<div class="login_form2">
-					<div class="title-container">基于SpringBoot和Shiro的企业考勤与薪资系统设计与实现登录</div>
 					<div v-if="loginType==1" class="list-item">
 						<div class="lable">
 							账号
@@ -42,8 +41,6 @@
 						</div>
 					</div>
 				</div>
-				<div class="idea-box1">Hello~</div>
-				<div class="idea-box2">欢迎您登录系统</div>
 			</el-form>
 		</div>
 	</div>
@@ -51,6 +48,7 @@
 <script>
 	import 'animate.css'
 	import menu from "@/utils/menu";
+	import loginBackground from "@/assets/img/login-attendance-salary-bg.png";
 	export default {
 		data() {
 			return {
@@ -67,7 +65,7 @@
 				roles: [],
 				tableName: "",
 				showPassword: false,
-				indexBgUrl: '',
+				loginBackground,
 			};
 		},
 		mounted() {
@@ -75,7 +73,6 @@
 
 		},
 		created() {
-			this.$http.get('config/info?name=bLoginBackgroundImg',).then(rs=>{this.indexBgUrl = rs.data.data?rs.data.data.value:''})
 		},
 		destroyed() {
 		},
@@ -197,53 +194,40 @@
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-size: cover;
-	background: url(http://codegen.caihongy.cn/20250717/b366c49e196e42409a70a6251e461de6.jpg);
-	background-repeat: no-repeat !important;
-	background-size: cover !important;
-	background: url(http://codegen.caihongy.cn/20250717/b366c49e196e42409a70a6251e461de6.jpg);
 	display: flex;
 	width: 100%;
 	min-height: 100vh;
 	justify-content: center;
 	align-items: center;
-	background-position: center bottom;
+	padding: 32px;
 
 	.login_form {
-		padding: 40px 5% 20px;
-		margin: 0 0 0 auto;
+		padding: 30px 36px 24px;
+		margin: 0;
 		z-index: 1;
 		display: flex;
-		min-height: 100vh;
+		min-height: auto;
 		flex-wrap: wrap;
-		border-radius: 0;
+		border-radius: 8px;
 		flex-direction: column;
-		background: #fff;
-		width: 40%;
+		background: rgba(255, 255, 255, 0.96);
+		box-shadow: 0 18px 48px rgba(20, 73, 120, 0.16);
+		width: calc(100vw - 64px);
+		max-width: 520px;
 		justify-content: center;
-		align-items: flex-end;
+		align-items: stretch;
 		height: auto;
 		.login_form2 {
 			padding: 0;
-			margin: 40px 0 0;
+			margin: 0;
 			background: none;
 			width: 100%;
-		}
-		.title-container {
-			padding: 0;
-			margin: 10px 0 20px 0;
-			text-shadow: none;
-			color: #333;
-			font-weight: 600;
-			width: 100%;
-			font-size: 24px;
-			line-height: 44px;
-			text-align: center;
 		}
 		.list-item {
 			border: 1px solid #d6d6d6;
 			border-radius: 0px;
 			padding: 0 20px;
-			margin: 0 auto 25px;
+			margin: 0 auto 18px;
 			background: #fff;
 			display: flex;
 			width: 100%;
@@ -367,7 +351,7 @@
 			}
 		}
 		.login-btn {
-			margin: 50px auto;
+			margin: 18px auto 0;
 			display: flex;
 			width: 100%;
 			justify-content: space-between;
@@ -393,7 +377,7 @@
 				cursor: pointer;
 				border-radius: 0px;
 				padding: 0 24px;
-				margin: 0 0 20px;
+				margin: 0 0 14px;
 				outline: none;
 				color: #fff;
 				background: #1c6ab2;
@@ -409,7 +393,7 @@
 				cursor: pointer;
 				border-radius: 0px;
 				padding: 0 10px;
-				margin: 0 10px 15px 0;
+				margin: 0;
 				outline: none;
 				color: #1c6ab2;
 				background: #aaceec;
@@ -437,22 +421,6 @@
 				opacity: 0.8;
 			}
 		}
-	}
-	.idea-box1 {
-		margin: 0 4% 0 0;
-		font-weight: 600;
-		width: 550px;
-		font-size: 42px;
-		height: auto;
-		order: -2;
-	}
-	.idea-box2 {
-		margin: 0 4% 0 0;
-		color: #333;
-		width: 550px;
-		font-size: 32px;
-		height: auto;
-		order: -1;
 	}
 }
 

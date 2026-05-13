@@ -9,7 +9,7 @@ const base = {
 	},
 	getProjectName(){
 		return {
-			projectName: "基于SpringBoot和Shiro的企业考勤与薪资系统设计与实现"
+			projectName: "企业考勤与薪资系统"
 		} 
 	},
 	getUsersName(){

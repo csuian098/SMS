@@ -1,6 +1,7 @@
 <template>
 	<div class="navbar">
 		<div class="title">
+			<img class="title-logo" :src="systemLogo" alt="logo">
 			<span class="title-name">{{this.$project.projectName}}</span>
 		</div>
 		<el-dropdown class="dropdown-box" @command="handleCommand" trigger="click">
@@ -37,6 +38,7 @@
 		Loading
 	} from 'element-ui';
 	import axios from 'axios';
+	import systemLogo from '@/assets/img/logo.jpg';
 	export default {
 		data() {
 			return {
@@ -44,6 +46,7 @@
 				ruleForm: {},
 				user: null,
 				topLogoUrl: '',
+				systemLogo,
 			};
 		},
 		created() {
@@ -128,16 +131,26 @@
 		.title {
 			margin: 0;
 			left: 20%;
-			display: block;
+			display: flex;
 			width: 60%;
 			position: absolute;
 			text-align: center;
+			justify-content: center;
+			align-items: center;
+			gap: 12px;
+			.title-logo {
+				width: 42px;
+				height: 42px;
+				object-fit: contain;
+				flex: 0 0 auto;
+			}
 			.title-name {
 				padding: 0;
 				color: #000;
 				font-weight: 600;
 				font-size: 32px;
 				line-height: 44px;
+				white-space: nowrap;
 			}
 		}
 		.dropdown-box {
